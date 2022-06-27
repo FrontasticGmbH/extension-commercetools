@@ -1,9 +1,9 @@
 import { Context, Request } from '@frontastic/extension-types';
-import { ProductApi } from '../commercetools/apis/ProductApi';
-import { CategoryQuery } from '../../types/query/CategoryQuery';
-import { Category } from '../../types/product/Category';
+import { ProductApi } from '../apis/ProductApi';
+import { CategoryQuery } from '../../../types/query/CategoryQuery';
+import { Category } from '../../../types/product/Category';
 import { getLocale, getPath } from './Request';
-import { Result } from '../../types/product/Result';
+import { Result } from '../../../types/product/Result';
 import { ProductQueryFactory } from './ProductQueryFactory';
 
 export class CategoryRouter {

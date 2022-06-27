@@ -1,12 +1,12 @@
 import { DataSourceConfiguration, Request } from '@frontastic/extension-types';
-import { ProductQuery, SortAttributes, SortOrder } from '../../types/query/ProductQuery';
-import { Filter, FilterTypes } from '../../types/query/Filter';
-import { RangeFilter } from '../../types/query/RangeFilter';
-import { TermFilter } from '../../types/query/TermFilter';
-import { FilterFieldTypes } from '../../types/product/FilterField';
-import { Facet } from '../../types/query/Facet';
-import { TermFacet } from '../../types/query/TermFacet';
-import { RangeFacet } from '../../types/query/RangeFacet';
+import { ProductQuery, SortAttributes, SortOrder } from '../../../types/query/ProductQuery';
+import { Filter, FilterTypes } from '../../../types/query/Filter';
+import { RangeFilter } from '../../../types/query/RangeFilter';
+import { TermFilter } from '../../../types/query/TermFilter';
+import { FilterFieldTypes } from '../../../types/product/FilterField';
+import { Facet } from '../../../types/query/Facet';
+import { TermFacet } from '../../../types/query/TermFacet';
+import { RangeFacet } from '../../../types/query/RangeFacet';
 
 export class ProductQueryFactory {
   static queryFromParams: (request?: Request, config?: DataSourceConfiguration) => ProductQuery = (

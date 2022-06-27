@@ -1,10 +1,10 @@
-import { Product } from '../../types/product/Product';
+import { Product } from '../../../types/product/Product';
 import { Context, Request } from '@frontastic/extension-types';
-import { ProductQuery } from '../../types/query/ProductQuery';
-import { ProductApi } from '../commercetools/apis/ProductApi';
-import { LineItem } from '../../types/cart/LineItem';
+import { ProductQuery } from '../../../types/query/ProductQuery';
+import { ProductApi } from '../apis/ProductApi';
+import { LineItem } from '../../../types/cart/LineItem';
 import { getPath, getLocale } from './Request';
-import { LineItem as WishlistItem } from '../../types/wishlist/LineItem';
+import { LineItem as WishlistItem } from '../../../types/wishlist/LineItem';
 
 export class ProductRouter {
   private static isProduct(product: Product | LineItem | WishlistItem): product is Product {

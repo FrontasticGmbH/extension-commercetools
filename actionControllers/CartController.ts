@@ -3,11 +3,11 @@ import { ActionContext } from '@frontastic/extension-types';
 import { Cart } from '../../../types/cart/Cart';
 import { LineItem } from '../../../types/cart/LineItem';
 import { Address } from '../../../types/account/Address';
-import { CartFetcher } from '../../utils/CartFetcher';
+import { CartFetcher } from '../utils/CartFetcher';
 import { ShippingMethod } from '../../../types/cart/ShippingMethod';
 import { Payment, PaymentStatuses } from '../../../types/cart/Payment';
 import { CartApi } from '../apis/CartApi';
-import { getLocale } from '../../utils/Request';
+import { getLocale } from '../utils/Request';
 import { Discount } from '../../../types/cart/Discount';
 import { EmailApi } from '../apis/EmailApi';
 

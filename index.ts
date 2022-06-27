@@ -12,14 +12,14 @@ import {
   DynamicPageSuccessResult,
   Request,
 } from '@frontastic/extension-types';
-import { getLocale, getPath } from '../utils/Request';
-import { ProductRouter } from '../utils/ProductRouter';
+import { getLocale, getPath } from './utils/Request';
+import { ProductRouter } from './utils/ProductRouter';
 import { Product } from '../../types/product/Product';
-import { SearchRouter } from '../utils/SearchRouter';
+import { SearchRouter } from './utils/SearchRouter';
 import { Result } from '../../types/product/Result';
-import { CategoryRouter } from '../utils/CategoryRouter';
+import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
-import { ProductQueryFactory } from '../utils/ProductQueryFactory';
+import { ProductQueryFactory } from './utils/ProductQueryFactory';
 
 export default {
   'dynamic-page-handler': async (
