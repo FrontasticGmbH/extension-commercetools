@@ -34,12 +34,8 @@ import {
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 import { Account } from '../../../types/account/Account';
 import { isReadyForCheckout } from '../utils/Cart';
-<<<<<<< HEAD:saas/project-libraries/extensions/commerce-commercetools/apis/CartApi.ts
 import { Discount } from '../../../types/cart/Discount';
-=======
-import { Discount } from '../../types/cart/Discount';
 import { ActionResult } from '@Types/result/actionResult';
->>>>>>> master:saas/project-libraries/extension-commercetools/commercetools/CartApi.ts
 
 export class CartApi extends BaseApi {
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
