@@ -34,7 +34,12 @@ import {
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 import { Account } from '../../../types/account/Account';
 import { isReadyForCheckout } from '../utils/Cart';
+<<<<<<< HEAD:saas/project-libraries/extensions/commerce-commercetools/apis/CartApi.ts
 import { Discount } from '../../../types/cart/Discount';
+=======
+import { Discount } from '../../types/cart/Discount';
+import { ActionResult } from '@Types/result/actionResult';
+>>>>>>> master:saas/project-libraries/extension-commercetools/commercetools/CartApi.ts
 
 export class CartApi extends BaseApi {
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
@@ -563,7 +568,7 @@ export class CartApi extends BaseApi {
     }
   };
 
-  redeemDiscountCode: (cart: Cart, code: string) => Promise<Cart> = async (cart: Cart, code: string) => {
+  redeemDiscountCode: (cart: Cart, code: string) => Promise<ActionResult<Cart>> = async (cart: Cart, code: string) => {
     try {
       const locale = await this.getCommercetoolsLocal();
 
@@ -578,11 +583,14 @@ export class CartApi extends BaseApi {
       };
 
       const commercetoolsCart = await this.updateCart(cart.cartId, cartUpdate, locale);
+      const data = await this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
 
-      return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
+      return { statusCode: 200, data };
     } catch (error) {
-      //TODO: better error, get status code etc...
-      throw new Error(`redeemDiscountCode failed. ${error}`);
+      return {
+        statusCode: (error as any).statusCode,
+        error: (error as any).message,
+      };
     }
   };
 

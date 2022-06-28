@@ -386,7 +386,7 @@ export abstract class BaseApi {
   protected projectKey: string;
   protected locale: string;
 
-  constructor(frontasticContext: Context, locale = 'de_CH') {
+  constructor(frontasticContext: Context, locale: string) {
     const engine = 'commercetools';
     const clientSettings = getConfig(frontasticContext.project, engine, locale);
     const client = ClientFactory.factor(clientSettings, frontasticContext.environment);

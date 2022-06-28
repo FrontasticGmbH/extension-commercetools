@@ -11,6 +11,11 @@ import { getLocale } from '../utils/Request';
 import { Discount } from '../../../types/cart/Discount';
 import { EmailApi } from '../apis/EmailApi';
 
+type ControllerResponse = Response & {
+  error?: string;
+  errorCode?: number;
+};
+
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 async function updateCartFromRequest(request: Request, actionContext: ActionContext): Promise<Cart> {
@@ -328,22 +333,34 @@ export const updatePayment: ActionHook = async (request: Request, actionContext:
 
 export const redeemDiscount: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  const cart = await CartFetcher.fetchCart(request, actionContext);
 
   const body: {
     code?: string;
   } = JSON.parse(request.body);
 
-  cart = await cartApi.redeemDiscountCode(cart, body.code);
+  const result = await cartApi.redeemDiscountCode(cart, body.code);
 
-  const response: Response = {
-    statusCode: 200,
-    body: JSON.stringify(cart),
-    sessionData: {
-      ...request.sessionData,
-      cartId: cart.cartId,
-    },
-  };
+  let response: ControllerResponse;
+
+  if (result.data) {
+    response = {
+      statusCode: 200,
+      body: JSON.stringify(result.data),
+      sessionData: {
+        ...request.sessionData,
+        cartId: result.data.cartId,
+      },
+    };
+  }
+
+  if (result.error) {
+    response = {
+      statusCode: result.statusCode,
+      errorCode: 101,
+      error: result.error,
+    };
+  }
 
   return response;
 };

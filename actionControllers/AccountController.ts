@@ -258,9 +258,9 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
 export const requestReset: ActionHook = async (request: Request, actionContext: ActionContext) => {
   type AccountRequestResetBody = {
     email?: string;
+    host?: string;
   };
-
-  const environment = process.env.NODE_ENV;
+    
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
   const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
 
@@ -271,7 +271,7 @@ export const requestReset: ActionHook = async (request: Request, actionContext: 
   await emailApi.sendPasswordResetEmail(
     passwordResetToken.confirmationToken,
     accountRequestResetBody.email,
-    environment,
+    accountRequestResetBody.host,
   );
 
   return {

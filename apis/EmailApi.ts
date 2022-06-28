@@ -88,10 +88,10 @@ export class EmailApi {
     } catch (error) {}
   }
 
-  async sendPasswordResetEmail(token: string, email: string, environment: string) {
+  async sendPasswordResetEmail(token: string, email: string, host: string) {
     if (!token) return; //not a valid token
     //Password reset URL
-    const url = this.getUrl(token, 'reset', environment);
+    const url = this.getUrl(token, 'reset-password', host);
     //message content
     const html = `
                   <h1>You requested a password reset!</h1>

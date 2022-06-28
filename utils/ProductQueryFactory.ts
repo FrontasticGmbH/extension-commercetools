@@ -9,7 +9,7 @@ import { TermFacet } from '../../../types/query/TermFacet';
 import { RangeFacet } from '../../../types/query/RangeFacet';
 
 export class ProductQueryFactory {
-  static queryFromParams: (request?: Request, config?: DataSourceConfiguration) => ProductQuery = (
+  static queryFromParams: (request: Request, config?: DataSourceConfiguration) => ProductQuery = (
     request: Request,
     config?: DataSourceConfiguration,
   ) => {
