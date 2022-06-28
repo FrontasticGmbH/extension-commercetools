@@ -23,7 +23,7 @@ import {
 import { Address } from '../../../types/account/Address';
 import { Order } from '../../../types/cart/Order';
 import { OrderFromCartDraft } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/order';
-import { Guid } from '../../utils/Guid';
+import { Guid } from '../utils/Guid';
 import { BaseApi } from './BaseApi';
 import { ShippingMethod } from '../../../types/cart/ShippingMethod';
 import { Locale } from '../Locale';
@@ -33,7 +33,7 @@ import {
   PaymentUpdateAction,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 import { Account } from '../../../types/account/Account';
-import { isReadyForCheckout } from '../../utils/Cart';
+import { isReadyForCheckout } from '../utils/Cart';
 import { Discount } from '../../../types/cart/Discount';
 
 export class CartApi extends BaseApi {

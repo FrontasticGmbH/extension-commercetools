@@ -21,7 +21,7 @@ import { Locale } from '../Locale';
 import { ShippingMethod } from '../../../types/cart/ShippingMethod';
 import { ShippingRate } from '../../../types/cart/ShippingRate';
 import { ShippingLocation } from '../../../types/cart/ShippingLocation';
-import { ProductRouter } from '../../utils/ProductRouter';
+import { ProductRouter } from '../utils/ProductRouter';
 import { ProductMapper } from './ProductMapper';
 import { ShippingInfo } from '../../../types/cart/ShippingInfo';
 import { Payment } from '../../../types/cart/Payment';
