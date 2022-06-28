@@ -1,5 +1,5 @@
 import { ActionContext, Request, Response } from '@frontastic/extension-types';
-import { getLocale } from '../utils/Request';
+import { getLocale } from '../../utils/Request';
 import { ProjectApi } from '../apis/ProjectApi';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;

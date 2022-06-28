@@ -1,8 +1,0 @@
-{
-  "dynamicPageType": "frontastic/order-history",
-  "name": "Order history",
-  "category": "Account",
-  "icon": "group",
-  "dataSourceType": "frontastic/empty",
-  "isMultiple": true
-}

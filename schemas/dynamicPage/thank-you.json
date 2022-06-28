@@ -1,8 +1,0 @@
-{
-  "dynamicPageType": "frontastic/thank-you",
-  "name": "Thank you",
-  "category": "Account",
-  "icon": "check_circle_outline",
-  "dataSourceType": "frontastic/empty",
-  "isMultiple": true
-}

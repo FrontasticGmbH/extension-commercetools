@@ -16,7 +16,7 @@ import { Product } from '../../../types/product/Product';
 import { Variant } from '../../../types/product/Variant';
 import { Attributes } from '../../../types/product/Attributes';
 import { Category } from '../../../types/product/Category';
-import { ProductRouter } from '../utils/ProductRouter';
+import { ProductRouter } from '../../utils/ProductRouter';
 import { Locale } from '../Locale';
 import { Money } from '../../../types/product/Money';
 import { FilterField, FilterFieldTypes, FilterFieldValue } from '../../../types/product/FilterField';

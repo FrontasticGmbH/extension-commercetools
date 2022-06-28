@@ -11,7 +11,7 @@ import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/g
 import { Cart } from '../../../types/cart/Cart';
 import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
 import { Address } from '../../../types/account/Address';
-import { Guid } from '../utils/Guid';
+import { Guid } from '../../utils/Guid';
 import { PasswordResetToken } from '../../../types/account/PasswordResetToken';
 
 export class AccountApi extends BaseApi {
