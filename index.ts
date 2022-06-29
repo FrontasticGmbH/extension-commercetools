@@ -26,10 +26,7 @@ export default {
   'dynamic-page-handler': async (
     request: Request,
     context: DynamicPageContext,
-  ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {
-    // **************************
-    // Commercetools integration
-    // **************************
+  ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {    
     // Identify Product
     if (ProductRouter.identifyFrom(request)) {
       return ProductRouter.loadFor(request, context.frontasticContext).then((product: Product) => {
@@ -97,10 +94,7 @@ export default {
 
     return null;
   },
-  'data-sources': {
-    // **************************
-    // Commercetools integration
-    // **************************
+  'data-sources': {    
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
 
@@ -112,10 +106,7 @@ export default {
         };
       });
     },
-
-    // **************************
-    // Commercetools integration
-    // **************************
+    
     'frontastic/product': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
 
@@ -130,15 +121,11 @@ export default {
       });
     },
   },
-  actions: {
-    // **************************
-    // Commercetools integration
-    // **************************
+  actions: {    
     account: AccountActions,
     cart: CartActions,
     product: ProductActions,
-    wishlist: WishlistActions,
-    // payment: PaymentActions,
+    wishlist: WishlistActions,    
     project: ProjectActions,
   },
 } as ExtensionRegistry;
