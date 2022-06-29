@@ -10,6 +10,7 @@ import {
   DynamicPageContext,
   DynamicPageRedirectResult,
   DynamicPageSuccessResult,
+  ExtensionRegistry,
   Request,
 } from '@frontastic/extension-types';
 import { getLocale, getPath } from './utils/Request';
@@ -140,4 +141,4 @@ export default {
     // payment: PaymentActions,
     project: ProjectActions,
   },
-};
+} as ExtensionRegistry;
