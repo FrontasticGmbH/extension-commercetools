@@ -456,12 +456,14 @@ export class CartApi extends BaseApi {
   };
 
   addPayment: (cart: Cart, payment: Payment) => Promise<Cart> = async (cart: Cart, payment: Payment) => {
+    let paymentDraft: PaymentDraft;
+
     try {
       const locale = await this.getCommercetoolsLocal();
 
       // TODO: create and use custom a payment field to include details for the payment integration
 
-      const paymentDraft: PaymentDraft = {
+      paymentDraft = {
         key: payment.id,
         amountPlanned: {
           centAmount: payment.amountPlanned.centAmount,
@@ -503,7 +505,7 @@ export class CartApi extends BaseApi {
       return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
     } catch (error) {
       //TODO: better error, get status code etc...
-      throw new Error(`addPayment failed. ${error}`);
+      throw new Error(`addPayment failed. ${error}, ${JSON.stringify(paymentDraft)}`);
     }
   };
 
