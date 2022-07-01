@@ -106,7 +106,7 @@ export class EmailApi {
     });
   }
 
-  async sendPaymentConfirmationEmail(account: Account) {
+  async sendPaymentConfirmationEmail(email: string) {
     //message content
     const html = `
                   <h1>Thanks for your order!</h1>
@@ -115,8 +115,8 @@ export class EmailApi {
     //send email
     try {
       await this.sendEmail({
-        to: account.email,
-        subject: 'Account Verification',
+        to: email,
+        subject: 'Payment confirmed',
         html,
       });
     } catch (error) {}

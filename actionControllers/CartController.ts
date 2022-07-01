@@ -176,7 +176,7 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
 
   let cart = await updateCartFromRequest(request, actionContext);
   cart = await cartApi.order(cart);
-  if (cart) await emailApi.sendPaymentConfirmationEmail(account);
+  if (cart) await emailApi.sendPaymentConfirmationEmail(account.email);
 
   // Unset the cartId
   const cartId: string = undefined;
