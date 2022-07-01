@@ -26,7 +26,21 @@ export default {
   'dynamic-page-handler': async (
     request: Request,
     context: DynamicPageContext,
-  ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {    
+  ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {
+    // Identify static page
+    const staticPageMatch = getPath(request)?.match(/^\/(cart|checkout|wishlist|account|login|register|reset-password|thank-you)/);
+    if (staticPageMatch) {
+      return {
+        dynamicPageType: `frontastic${staticPageMatch[0]}`,
+        dataSourcePayload: {
+
+        },
+        pageMatchingPayload: {
+
+        },
+      } as DynamicPageSuccessResult;
+    }
+
     // Identify Product
     if (ProductRouter.identifyFrom(request)) {
       return ProductRouter.loadFor(request, context.frontasticContext).then((product: Product) => {
@@ -94,7 +108,7 @@ export default {
 
     return null;
   },
-  'data-sources': {    
+  'data-sources': {
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
 
@@ -106,7 +120,7 @@ export default {
         };
       });
     },
-    
+
     'frontastic/product': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
 
@@ -121,11 +135,11 @@ export default {
       });
     },
   },
-  actions: {    
+  actions: {
     account: AccountActions,
     cart: CartActions,
     product: ProductActions,
-    wishlist: WishlistActions,    
+    wishlist: WishlistActions,
     project: ProjectActions,
   },
 } as ExtensionRegistry;
