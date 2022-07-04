@@ -35,7 +35,7 @@ import {
 import { Account } from '../../../types/account/Account';
 import { isReadyForCheckout } from '../utils/Cart';
 import { Discount } from '../../../types/cart/Discount';
-import { ActionResult } from '@Types/result/actionResult';
+import { ActionResult } from '@Types/result/ActionResult';
 
 export class CartApi extends BaseApi {
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
