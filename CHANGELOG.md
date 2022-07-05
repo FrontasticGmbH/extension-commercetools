@@ -1,4 +1,14 @@
 
+## Version 1.1.0 (2022-07-05)
+
+** New Features **
+
+- Added similar products datasource
+
+** Bug fixes **
+
+- Localization fix
+
 ## Version 1.0.0 (2022-07-04)
 
 ** New Features **
