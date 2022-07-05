@@ -87,15 +87,17 @@ export class ProductMapper {
     commercetoolsVariant: CommercetoolsProductVariant,
     locale: Locale,
   ) => Variant = (commercetoolsVariant: CommercetoolsProductVariant, locale: Locale) => {
-    const attributes = ProductMapper.commercetoolsAttributesToAttributes(commercetoolsVariant.attributes, locale);
+    const attributes = commercetoolsVariant.attributes
+      ? ProductMapper.commercetoolsAttributesToAttributes(commercetoolsVariant.attributes, locale)
+      : [];
     const { price, discountedPrice, discounts } = ProductMapper.extractPriceAndDiscounts(commercetoolsVariant, locale);
 
     return {
       id: commercetoolsVariant.id?.toString(),
       sku: commercetoolsVariant.sku?.toString(),
       images: [
-        ...commercetoolsVariant.assets.map((asset) => asset.sources?.[0].uri),
-        ...commercetoolsVariant.images.map((image) => image.url),
+        ...(commercetoolsVariant?.assets?.map((asset) => asset.sources?.[0].uri) ?? []),
+        ...(commercetoolsVariant?.images?.map((image) => image.url) ?? []),
       ],
       groupId: attributes?.baseId || undefined,
       attributes: attributes,
@@ -179,22 +181,26 @@ export class ProductMapper {
   }
 
   static extractPriceAndDiscounts(commercetoolsVariant: CommercetoolsProductVariant, locale: Locale) {
-    let price: Money = undefined;
-    let discountedPrice: Money = undefined;
-    let discounts: string[] = undefined;
+    let price: Money | undefined;
+    let discountedPrice: Money | undefined;
+    let discounts: string[] | undefined;
 
     if (commercetoolsVariant?.scopedPrice) {
       price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.scopedPrice?.value);
-      discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.scopedPrice?.discounted?.value);
-      discounts = [commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description[locale.language]];
+      if (commercetoolsVariant.scopedPrice?.discounted?.value)
+        discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.scopedPrice?.discounted?.value);
+      if (commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description?.[locale.language])
+        discounts = [commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description[locale.language]];
 
       return { price, discountedPrice, discounts };
     }
 
     if (commercetoolsVariant?.price) {
       price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.price?.value);
-      discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.price?.discounted?.value);
-      discounts = [commercetoolsVariant.price?.discounted?.discount?.obj?.description[locale.language]];
+      if (commercetoolsVariant.price?.discounted?.value)
+        discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.price?.discounted?.value);
+      if (commercetoolsVariant.price?.discounted?.discount?.obj?.description?.[locale.language])
+        discounts = [commercetoolsVariant.price?.discounted?.discount?.obj?.description[locale.language]];
 
       return { price, discountedPrice, discounts };
     }
@@ -293,7 +299,7 @@ export class ProductMapper {
           attributeId: `variants.attributes.${attribute.name}`,
         };
 
-        facetDefinitionsIndex[facetDefinition.attributeId] = facetDefinition;
+        if (facetDefinition.attributeId) facetDefinitionsIndex[facetDefinition.attributeId] = facetDefinition;
       });
     });
 
@@ -356,7 +362,7 @@ export class ProductMapper {
     }
 
     facetDefinitions.forEach((facetDefinition) => {
-      typeLookup[facetDefinition.attributeId] = facetDefinition.attributeType;
+      if (facetDefinition.attributeId) typeLookup[facetDefinition.attributeId] = facetDefinition.attributeType || '';
     });
 
     queryFacets.forEach((queryFacet) => {
@@ -373,16 +379,16 @@ export class ProductMapper {
           );
           break;
         case 'enum':
-          filterFacets.push(`${queryFacet.identifier}.label:"${(queryFacet as QueryTermFacet).terms.join('","')}"`);
+          filterFacets.push(`${queryFacet.identifier}.label:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`);
           break;
         case 'lenum':
           filterFacets.push(
-            `${queryFacet.identifier}.label.${locale.language}:"${(queryFacet as QueryTermFacet).terms.join('","')}"`,
+            `${queryFacet.identifier}.label.${locale.language}:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`,
           );
           break;
         case 'ltext':
           filterFacets.push(
-            `${queryFacet.identifier}.${locale.language}:"${(queryFacet as QueryTermFacet).terms.join('","')}"`,
+            `${queryFacet.identifier}.${locale.language}:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`,
           );
           break;
         case 'number':
@@ -391,7 +397,7 @@ export class ProductMapper {
         case 'reference':
         default:
           if (queryFacet.type === FilterTypes.TERM || queryFacet.type === FilterTypes.BOOLEAN) {
-            filterFacets.push(`${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms.join('","')}"`);
+            filterFacets.push(`${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`);
           } else {
             filterFacets.push(
               `${queryFacet.identifier}:range (${(queryFacet as QueryRangeFacet).min} to ${
@@ -493,7 +499,7 @@ export class ProductMapper {
           label: facetResultTerm.term.toString(),
           count: facetResultTerm.count,
           key: facetResultTerm.term.toString(),
-          selected: facetQuery !== undefined && facetQuery.terms.includes(facetResultTerm.term.toString()),
+          selected: facetQuery !== undefined && facetQuery.terms?.includes(facetResultTerm.term.toString()),
         };
         return term;
       }),
