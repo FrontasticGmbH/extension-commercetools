@@ -170,6 +170,7 @@ export class ProductApi extends BaseApi {
       filterFields.push({
         field: 'categoryId',
         type: FilterFieldTypes.ENUM,
+        label: 'Category ID',
         values: await this.queryCategories({ limit: 250 }).then((result) => {
           return (result.items as Category[]).map((item) => {
             return {

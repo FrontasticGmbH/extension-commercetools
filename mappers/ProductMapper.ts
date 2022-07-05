@@ -270,7 +270,7 @@ export class ProductMapper {
       type: TypeMap.has(commercetoolsAttributeType)
         ? TypeMap.get(commercetoolsAttributeType)
         : commercetoolsAttributeType,
-      label: commercetoolsAttributeDefinition.label?.[locale.language],
+      label: commercetoolsAttributeDefinition.label?.[locale.language] ?? commercetoolsAttributeDefinition.name,
       values: filterFieldValues.length > 0 ? filterFieldValues : undefined,
     };
   }
