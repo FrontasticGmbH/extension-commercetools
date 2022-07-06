@@ -53,7 +53,6 @@ export class CartApi extends BaseApi {
               'paymentInfo.payments[*]',
             ],
             where: [`customerId="${account.accountId}"`, `cartState="Active"`],
-            sort: 'createdAt desc',
           },
         })
         .execute();
