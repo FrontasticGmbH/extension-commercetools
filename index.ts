@@ -65,20 +65,9 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/search',
-            dataSourcePayload: {
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-            },
+            dataSourcePayload: result,
             pageMatchingPayload: {
-              query: result.query,
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
+              query: result.query
             },
           };
         }
