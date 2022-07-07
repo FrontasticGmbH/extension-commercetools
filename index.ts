@@ -28,16 +28,14 @@ export default {
     context: DynamicPageContext,
   ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {
     // Identify static page
-    const staticPageMatch = getPath(request)?.match(/^\/(cart|checkout|wishlist|account|login|register|reset-password|thank-you)/);
+    const staticPageMatch = getPath(request)?.match(
+      /^\/(cart|checkout|wishlist|account|login|register|reset-password|thank-you)/,
+    );
     if (staticPageMatch) {
       return {
         dynamicPageType: `frontastic${staticPageMatch[0]}`,
-        dataSourcePayload: {
-
-        },
-        pageMatchingPayload: {
-
-        },
+        dataSourcePayload: {},
+        pageMatchingPayload: {},
       } as DynamicPageSuccessResult;
     }
 
@@ -67,9 +65,20 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/search',
-            dataSourcePayload: result,
+            dataSourcePayload: {
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
+            },
             pageMatchingPayload: {
               query: result.query,
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
             },
           };
         }
