@@ -172,11 +172,9 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
   const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
 
-  const { account } = JSON.parse(request.body);
-
   let cart = await updateCartFromRequest(request, actionContext);
   cart = await cartApi.order(cart);
-  if (cart) await emailApi.sendPaymentConfirmationEmail(account.email);
+  await emailApi.sendPaymentConfirmationEmail(cart.email);
 
   // Unset the cartId
   const cartId: string = undefined;
