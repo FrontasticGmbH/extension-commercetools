@@ -67,7 +67,7 @@ export default {
             dynamicPageType: 'frontastic/search',
             dataSourcePayload: result,
             pageMatchingPayload: {
-              query: result.query
+              query: result.query,
             },
           };
         }
