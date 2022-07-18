@@ -420,7 +420,7 @@ export abstract class BaseApi {
 
     if (this.projectKey in productTypesCache) {
       const cacheEntry = productTypesCache[this.projectKey];
-      if (cacheEntry.expiryTime < now) {
+      if (cacheEntry.expiryTime > now) {
         return cacheEntry.productTypes;
       }
     }
@@ -442,7 +442,7 @@ export abstract class BaseApi {
 
     if (this.projectKey in projectCache) {
       const cacheEntry = projectCache[this.projectKey];
-      if (cacheEntry.expiryTime < now) {
+      if (cacheEntry.expiryTime > now) {
         return cacheEntry.project;
       }
     }
