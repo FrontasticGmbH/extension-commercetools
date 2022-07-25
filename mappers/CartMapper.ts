@@ -213,11 +213,22 @@ export class CartMapper {
       });
 
       matchingShippingRates.forEach((matchingShippingRates) => {
+        const matchingShippingRatePriceTiers = matchingShippingRates.tiers.filter(function (shippingRatePriceTier) {
+          if (shippingRatePriceTier.isMatching !== true) {
+            return false; // skip
+          }
+          return true;
+        });
+
         shippingRates.push({
           shippingRateId: shippingRateId,
           name: name,
           locations: locations,
-          price: ProductMapper.commercetoolsMoneyToMoney(matchingShippingRates.price),
+          price:
+            // If there are multiple matching price, we only consider the first match.
+            matchingShippingRatePriceTiers.length > 0
+              ? ProductMapper.commercetoolsMoneyToMoney(matchingShippingRatePriceTiers[0].price)
+              : ProductMapper.commercetoolsMoneyToMoney(matchingShippingRates.price),
         } as ShippingRate);
       });
     });
