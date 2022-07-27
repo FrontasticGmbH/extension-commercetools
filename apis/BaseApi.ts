@@ -386,14 +386,15 @@ export abstract class BaseApi {
   protected projectKey: string;
   protected locale: string;
 
-  constructor(frontasticContext: Context, locale: string) {
+  constructor(frontasticContext: Context, locale: string | null) {
+    this.locale = locale !== null ? locale : frontasticContext.project.defaultLocale;
+
     const engine = 'commercetools';
-    const clientSettings = getConfig(frontasticContext.project, engine, locale);
+    const clientSettings = getConfig(frontasticContext.project, engine, this.locale);
     const client = ClientFactory.factor(clientSettings, frontasticContext.environment);
 
     this.apiRoot = createApiBuilderFromCtpClient(client);
     this.projectKey = clientSettings.projectKey;
-    this.locale = locale;
   }
 
   protected getApiForProject(): ByProjectKeyRequestBuilder {
