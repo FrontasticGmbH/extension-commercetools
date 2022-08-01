@@ -13,6 +13,7 @@ import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declara
 import { Address } from '../../../types/account/Address';
 import { Guid } from '../utils/Guid';
 import { PasswordResetToken } from '../../../types/account/PasswordResetToken';
+import { ExtensionError, ValidationError } from '../utils/Errors';
 
 export class AccountApi extends BaseApi {
   create: (account: Account, cart: Cart | undefined) => Promise<Account> = async (
@@ -60,13 +61,16 @@ export class AccountApi extends BaseApi {
           body: customerDraft,
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return AccountMapper.commercetoolsCustomerToAccount(response.body.customer, locale);
         })
-        .catch((error) => {
+        .catch(error => {
           if (error.code && error.code === 400) {
             if (error.body && error.body?.errors?.[0]?.code === 'DuplicateField') {
-              throw new Error(`The account ${account.email} does already exist.`);
+              throw new ExtensionError({
+                message: `The account ${account.email} does already exist.`,
+                code: error.code,
+              });
             }
 
             /*
@@ -89,7 +93,10 @@ export class AccountApi extends BaseApi {
 
       return account;
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`create failed. ${error}`);
     }
   };
@@ -122,15 +129,20 @@ export class AccountApi extends BaseApi {
           },
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
         })
-        .catch((error) => {
-          throw new Error(`Failed to confirm email with token ${token}. ${error}`);
+        .catch(error => {
+          throw new ExtensionError({
+            errors: [{ message: error.message, code: error.code }],
+          });
         });
     } catch (error) {
-      //TODO: better error, get status code etc...
-      throw new Error(`Confirm email failed. ${error}`);
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
+      throw new Error(`confirmEmail failed. ${error}`);
     }
   };
 
@@ -158,13 +170,16 @@ export class AccountApi extends BaseApi {
           },
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return AccountMapper.commercetoolsCustomerToAccount(response.body.customer, locale);
         })
-        .catch((error) => {
+        .catch(error => {
           if (error.code && error.code === 400) {
             if (error.body && error.body?.errors?.[0]?.code === 'InvalidCredentials') {
-              throw new Error(`Invalid credentials to login with the account ${account.email}`);
+              throw new ExtensionError({
+                message: `Invalid credentials to login with the account ${account.email}`,
+                code: error.code.toString(),
+              });
             }
 
             /*
@@ -175,7 +190,9 @@ export class AccountApi extends BaseApi {
             }
           }
 
-          throw new Error(`Failed to login account  ${account.email}.`);
+          throw new ExtensionError({
+            errors: [{ message: error.message, code: error.code }],
+          });
         });
 
       if (reverify) {
@@ -183,12 +200,17 @@ export class AccountApi extends BaseApi {
         account.confirmationToken = token.value;
         account.tokenValidUntil = new Date(token.expiresAt);
       } else if (!account.confirmed) {
-        throw new Error(`Your account ${account.email} is not activated yet!`);
+        throw new ValidationError({
+          message: `Your account ${account.email} is not activated yet!`,
+        });
       }
 
       return account;
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`login failed. ${error}`);
     }
   };
@@ -215,17 +237,22 @@ export class AccountApi extends BaseApi {
           },
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
         })
-        .catch((error) => {
-          throw new Error(`Failed to update password for account ${account.email}. ${error}`);
+        .catch(error => {
+          throw new ExtensionError({
+            errors: [{ message: error.message, code: error.code }],
+          });
         });
 
       return account;
     } catch (error) {
-      //TODO: better error, get status code etc...
-      throw new Error(`updateAccount failed. ${error}`);
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
+      throw new Error(`updatePassword failed. ${error}`);
     }
   };
 
@@ -241,18 +268,23 @@ export class AccountApi extends BaseApi {
           },
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return {
             email: email,
             confirmationToken: response.body.value,
             tokenValidUntil: new Date(response.body.expiresAt),
           };
         })
-        .catch((error) => {
-          throw new Error(`Failed to generate reset token for account ${email}. ${error}`);
+        .catch(error => {
+          throw new ExtensionError({
+            errors: [{ message: error.message, code: error.code }],
+          });
         });
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`generatePasswordResetToken failed. ${error}`);
     }
   };
@@ -274,14 +306,19 @@ export class AccountApi extends BaseApi {
           },
         })
         .execute()
-        .then((response) => {
+        .then(response => {
           return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
         })
-        .catch((error) => {
-          throw new Error(`Failed to reset password with token ${token}. ${error}`);
+        .catch(error => {
+          throw new ExtensionError({
+            errors: [{ message: error.message, code: error.code }],
+          });
         });
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`resetPassword failed. ${error}`);
     }
   };
@@ -314,7 +351,10 @@ export class AccountApi extends BaseApi {
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`update failed. ${error}`);
     }
   };
@@ -351,7 +391,10 @@ export class AccountApi extends BaseApi {
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`addAddress failed. ${error}`);
     }
   };
@@ -391,7 +434,10 @@ export class AccountApi extends BaseApi {
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`updateAddress failed. ${error}`);
     }
   };
@@ -406,14 +452,17 @@ export class AccountApi extends BaseApi {
       const addressData = AccountMapper.addressToCommercetoolsAddress(address);
 
       if (addressData.id === undefined) {
-        throw new Error(`The address passed doesn't contain an id.`);
+        throw new ValidationError({ message: `The address passed doesn't contain an id.` });
       }
 
       customerUpdateActions.push({ action: 'removeAddress', addressId: address.addressId });
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`removeAddress failed. ${error}`);
     }
   };
@@ -431,7 +480,10 @@ export class AccountApi extends BaseApi {
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`setDefaultBillingAddress failed. ${error}`);
     }
   };
@@ -449,7 +501,10 @@ export class AccountApi extends BaseApi {
 
       return await this.updateAccount(account, customerUpdateActions);
     } catch (error) {
-      //TODO: better error, get status code etc...
+      if (error instanceof ExtensionError) {
+        throw error;
+      }
+
       throw new Error(`setDefaultShippingAddress failed. ${error}`);
     }
   };
@@ -513,11 +568,13 @@ export class AccountApi extends BaseApi {
         body: customerUpdate,
       })
       .execute()
-      .then((response) => {
+      .then(response => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
       })
-      .catch((error) => {
-        throw error;
+      .catch(error => {
+        throw new ExtensionError({
+          errors: [{ message: error.message, code: error.code }],
+        });
       });
   }
 }
