@@ -1,23 +1,15 @@
-export type ErrorData = {
-  message: string;
-  code?: string;
-};
+export type ErrorData = { message: string; errors?: never };
 
-export type ErrorProps = {
-  code?: string;
-} & ({ message: string; errors?: never } | { message?: never; errors: ErrorData[] });
+export type ErrorProps = ErrorData | { message?: never; errors: ErrorData[] };
 
-export class ExtensionError extends Error {
-  code?: string;
+export abstract class ExtensionError extends Error {
+  protected code?: string;
   errors: ErrorData[];
 
-  constructor({ message, code, errors }: ErrorProps) {
-    const error: ErrorData = message ? { message, ...(code ? { code } : {}) } : errors?.[0];
+  protected constructor({ message, errors }: ErrorProps) {
+    super(message || errors?.[0]?.message);
 
-    super(error.message);
-    this.errors = message ? [error] : errors;
-
-    if (error.code) this.code = error.code;
+    this.errors = errors || [{ message }];
   }
 }
 
@@ -25,5 +17,22 @@ export class ValidationError extends ExtensionError {
   constructor(options: ErrorProps) {
     super(options);
     this.code = 'validation_error';
+  }
+}
+
+export class ExternalError extends ExtensionError {
+  status: number;
+  body?: string | Record<string, unknown>;
+
+  constructor(
+    options: {
+      status: number;
+      body?: string;
+    } & ErrorProps,
+  ) {
+    super(options);
+    this.status = options.status;
+    this.body = options.body;
+    this.code = 'external_error';
   }
 }

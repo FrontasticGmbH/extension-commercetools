@@ -10,6 +10,7 @@ import { RangeFilter } from '../../../types/query/RangeFilter';
 import { CategoryQuery } from '../../../types/query/CategoryQuery';
 import { Category } from '../../../types/product/Category';
 import { FacetDefinition } from '../../../types/product/FacetDefinition';
+import { ExternalError } from '../utils/Errors';
 
 export class ProductApi extends BaseApi {
   protected getOffsetFromCursor = (cursor: string) => {
@@ -61,7 +62,7 @@ export class ProductApi extends BaseApi {
       }
 
       if (productQuery.filters !== undefined) {
-        productQuery.filters.forEach((filter) => {
+        productQuery.filters.forEach(filter => {
           switch (filter.type) {
             case FilterTypes.TERM:
               filterQuery.push(`${filter.identifier}.key:"${(filter as TermFilter).terms.join('","')}"`);
@@ -76,9 +77,8 @@ export class ProductApi extends BaseApi {
                 // The scopedPrice filter is a commercetools price filter of a product variant selected
                 // base on the price scope. The scope used is currency and country.
                 filterQuery.push(
-                  `variants.scopedPrice.value.centAmount:range (${(filter as RangeFilter).min ?? '*'} to ${
-                    (filter as RangeFilter).max ?? '*'
-                  })`,
+                  `variants.scopedPrice.value.centAmount:range (${(filter as RangeFilter).min ??
+                    '*'} to ${(filter as RangeFilter).max ?? '*'})`,
                 );
               }
               break;
@@ -101,7 +101,7 @@ export class ProductApi extends BaseApi {
       const methodArgs = {
         queryArgs: {
           sort: sortAttributes,
-          limit: limit,
+          limit: -1,
           offset: this.getOffsetFromCursor(productQuery.cursor),
           priceCurrency: locale.currency,
           priceCountry: locale.country,
@@ -118,8 +118,8 @@ export class ProductApi extends BaseApi {
         .search()
         .get(methodArgs)
         .execute()
-        .then((response) => {
-          const items = response.body.results.map((product) =>
+        .then(response => {
+          const items = response.body.results.map(product =>
             ProductMapper.commercetoolsProductProjectionToProduct(product, locale),
           );
 
@@ -139,12 +139,11 @@ export class ProductApi extends BaseApi {
 
           return result;
         })
-        .catch((error) => {
-          throw error;
+        .catch(error => {
+          throw new ExternalError({ status: error.code, message: error.message, body: error.body });
         });
     } catch (error) {
-      //TODO: better error, get status code etc...
-      throw new Error(`query failed. ${error}`);
+      throw error;
     }
   };
 
@@ -163,7 +162,10 @@ export class ProductApi extends BaseApi {
     try {
       const locale = await this.getCommercetoolsLocal();
 
-      const response = await this.getApiForProject().productTypes().get().execute();
+      const response = await this.getApiForProject()
+        .productTypes()
+        .get()
+        .execute();
 
       const filterFields = ProductMapper.commercetoolsProductTypesToFilterFields(response.body.results, locale);
 
@@ -171,8 +173,8 @@ export class ProductApi extends BaseApi {
         field: 'categoryId',
         type: FilterFieldTypes.ENUM,
         label: 'Category ID',
-        values: await this.queryCategories({ limit: 250 }).then((result) => {
-          return (result.items as Category[]).map((item) => {
+        values: await this.queryCategories({ limit: 250 }).then(result => {
+          return (result.items as Category[]).map(item => {
             return {
               value: item.categoryId,
               name: item.name,
@@ -216,8 +218,8 @@ export class ProductApi extends BaseApi {
         .categories()
         .get(methodArgs)
         .execute()
-        .then((response) => {
-          const items = response.body.results.map((category) =>
+        .then(response => {
+          const items = response.body.results.map(category =>
             ProductMapper.commercetoolsCategoryToCategory(category, locale),
           );
 
@@ -236,7 +238,7 @@ export class ProductApi extends BaseApi {
 
           return result;
         })
-        .catch((error) => {
+        .catch(error => {
           throw error;
         });
     } catch (error) {
