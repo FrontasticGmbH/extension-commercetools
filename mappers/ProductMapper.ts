@@ -87,6 +87,8 @@ export class ProductMapper {
     commercetoolsVariant: CommercetoolsProductVariant,
     locale: Locale,
   ) => Variant = (commercetoolsVariant: CommercetoolsProductVariant, locale: Locale) => {
+    console.debug('commercetoolsVariant:: ', commercetoolsVariant);
+
     const attributes = commercetoolsVariant.attributes
       ? ProductMapper.commercetoolsAttributesToAttributes(commercetoolsVariant.attributes, locale)
       : [];
@@ -96,8 +98,8 @@ export class ProductMapper {
       id: commercetoolsVariant.id?.toString(),
       sku: commercetoolsVariant.sku?.toString(),
       images: [
-        ...(commercetoolsVariant?.assets?.map((asset) => asset.sources?.[0].uri) ?? []),
-        ...(commercetoolsVariant?.images?.map((image) => image.url) ?? []),
+        ...(commercetoolsVariant?.assets?.map(asset => asset.sources?.[0].uri) ?? []),
+        ...(commercetoolsVariant?.images?.map(image => image.url) ?? []),
       ],
       groupId: attributes?.baseId || undefined,
       attributes: attributes,
@@ -114,7 +116,7 @@ export class ProductMapper {
   ) => Attributes = (commercetoolsAttributes: CommercetoolsAttribute[], locale: Locale) => {
     const attributes: Attributes = {};
 
-    commercetoolsAttributes?.forEach((commercetoolsAttribute) => {
+    commercetoolsAttributes?.forEach(commercetoolsAttribute => {
       attributes[commercetoolsAttribute.name] = ProductMapper.extractAttributeValue(
         commercetoolsAttribute.value,
         locale,
@@ -130,7 +132,7 @@ export class ProductMapper {
   ) => Category[] = (commercetoolsCategoryReferences: CategoryReference[], locale: Locale) => {
     const categories: Category[] = [];
 
-    commercetoolsCategoryReferences.forEach((commercetoolsCategory) => {
+    commercetoolsCategoryReferences.forEach(commercetoolsCategory => {
       let category: Category = {
         categoryId: commercetoolsCategory.id,
       };
@@ -157,7 +159,7 @@ export class ProductMapper {
       path:
         commercetoolsCategory.ancestors.length > 0
           ? `/${commercetoolsCategory.ancestors
-              .map((ancestor) => {
+              .map(ancestor => {
                 return ancestor.id;
               })
               .join('/')}/${commercetoolsCategory.id}`
@@ -174,7 +176,7 @@ export class ProductMapper {
     }
 
     if (commercetoolsAttributeValue instanceof Array) {
-      return commercetoolsAttributeValue.map((value) => ProductMapper.extractAttributeValue(value, locale));
+      return commercetoolsAttributeValue.map(value => ProductMapper.extractAttributeValue(value, locale));
     }
 
     return commercetoolsAttributeValue[locale.language] || commercetoolsAttributeValue;
@@ -230,8 +232,8 @@ export class ProductMapper {
   ): FilterField[] {
     const filterFields: FilterField[] = [];
 
-    commercetoolsProductTypes?.forEach((productType) => {
-      productType.attributes?.forEach((attribute) => {
+    commercetoolsProductTypes?.forEach(productType => {
+      productType.attributes?.forEach(attribute => {
         if (!attribute.isSearchable) {
           return;
         }
@@ -288,8 +290,8 @@ export class ProductMapper {
     const facetDefinitionsIndex: { [key: string]: FacetDefinition } = {};
     const facetDefinitions: FacetDefinition[] = [];
 
-    commercetoolsProductTypes?.forEach((productType) => {
-      productType.attributes?.forEach((attribute) => {
+    commercetoolsProductTypes?.forEach(productType => {
+      productType.attributes?.forEach(attribute => {
         if (!attribute.isSearchable) {
           return;
         }
@@ -313,7 +315,7 @@ export class ProductMapper {
   static facetDefinitionsToCommercetoolsQueryArgFacets(facetDefinitions: FacetDefinition[], locale: Locale): string[] {
     const queryArgFacets: string[] = [];
 
-    facetDefinitions?.forEach((facetDefinition) => {
+    facetDefinitions?.forEach(facetDefinition => {
       let facet: string;
 
       switch (facetDefinition.attributeType) {
@@ -361,11 +363,11 @@ export class ProductMapper {
       return filterFacets;
     }
 
-    facetDefinitions.forEach((facetDefinition) => {
+    facetDefinitions.forEach(facetDefinition => {
       if (facetDefinition.attributeId) typeLookup[facetDefinition.attributeId] = facetDefinition.attributeType || '';
     });
 
-    queryFacets.forEach((queryFacet) => {
+    queryFacets.forEach(queryFacet => {
       if (!typeLookup?.hasOwnProperty(queryFacet.identifier)) {
         return;
       }
@@ -493,7 +495,7 @@ export class ProductMapper {
       label: facetKey,
       key: facetKey,
       selected: facetQuery !== undefined,
-      terms: facetResult.terms.map((facetResultTerm) => {
+      terms: facetResult.terms.map(facetResultTerm => {
         const term: Term = {
           identifier: facetResultTerm.term.toString(),
           label: facetResultTerm.term.toString(),
@@ -518,8 +520,8 @@ export class ProductMapper {
       label: facetKey,
       key: facetKey,
       count: facetResult.total,
-      min: Math.min(...facetResult.terms.map((facetResultTerm) => facetResultTerm.term)) ?? Number.MIN_SAFE_INTEGER,
-      max: Math.max(...facetResult.terms.map((facetResultTerm) => facetResultTerm.term)) ?? Number.MAX_SAFE_INTEGER,
+      min: Math.min(...facetResult.terms.map(facetResultTerm => facetResultTerm.term)) ?? Number.MIN_SAFE_INTEGER,
+      max: Math.max(...facetResult.terms.map(facetResultTerm => facetResultTerm.term)) ?? Number.MAX_SAFE_INTEGER,
     };
 
     if (facetQuery) {

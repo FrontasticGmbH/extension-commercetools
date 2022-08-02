@@ -8,7 +8,8 @@ import { LineItem as WishlistItem } from '../../../types/wishlist/LineItem';
 
 export class ProductRouter {
   private static isProduct(product: Product | LineItem | WishlistItem): product is Product {
-    return (product as Product).productId !== undefined;
+    // Only Product has the property "slug"
+    return product.hasOwnProperty('slug');
   }
 
   static generateUrlFor(item: Product | LineItem | WishlistItem) {

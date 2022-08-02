@@ -55,9 +55,10 @@ export class CartMapper {
   ) => LineItem[] = (commercetoolsLineItems: CommercetoolsLineItem[], locale: Locale) => {
     const lineItems: LineItem[] = [];
 
-    commercetoolsLineItems?.forEach((commercetoolsLineItem) => {
+    commercetoolsLineItems?.forEach(commercetoolsLineItem => {
       const item: LineItem = {
         lineItemId: commercetoolsLineItem.id,
+        productId: commercetoolsLineItem.productId,
         name: commercetoolsLineItem?.name[locale.language] || '',
         type: 'variant',
         count: commercetoolsLineItem.quantity,
@@ -193,10 +194,10 @@ export class CartMapper {
 
     const shippingRates: ShippingRate[] = [];
 
-    commercetoolsZoneRates.forEach((commercetoolsZoneRate) => {
+    commercetoolsZoneRates.forEach(commercetoolsZoneRate => {
       const shippingRateId = commercetoolsZoneRate.zone.id;
       const name = commercetoolsZoneRate.zone?.obj?.name || undefined;
-      const locations = commercetoolsZoneRate.zone?.obj?.locations?.map((location) => {
+      const locations = commercetoolsZoneRate.zone?.obj?.locations?.map(location => {
         return {
           country: location.country,
           state: location.state,
@@ -205,15 +206,15 @@ export class CartMapper {
 
       // When we tried to get only matching shipping methods, `isMatching` value will be returned.
       // In those cases, we'll only map the ones with value `true`.
-      const matchingShippingRates = commercetoolsZoneRate.shippingRates.filter(function (shippingRate) {
+      const matchingShippingRates = commercetoolsZoneRate.shippingRates.filter(function(shippingRate) {
         if (shippingRate.isMatching !== undefined && shippingRate.isMatching !== true) {
           return false; // skip
         }
         return true;
       });
 
-      matchingShippingRates.forEach((matchingShippingRates) => {
-        const matchingShippingRatePriceTiers = matchingShippingRates.tiers.filter(function (shippingRatePriceTier) {
+      matchingShippingRates.forEach(matchingShippingRates => {
+        const matchingShippingRatePriceTiers = matchingShippingRates.tiers.filter(function(shippingRatePriceTier) {
           if (shippingRatePriceTier.isMatching !== true) {
             return false; // skip
           }
@@ -242,7 +243,7 @@ export class CartMapper {
   ) => Payment[] = (commercetoolsPaymentInfo: CommercetoolsPaymentInfo | undefined, locale: Locale) => {
     const payments: Payment[] = [];
 
-    commercetoolsPaymentInfo?.payments?.forEach((commercetoolsPayment) => {
+    commercetoolsPaymentInfo?.payments?.forEach(commercetoolsPayment => {
       if (commercetoolsPayment.obj) {
         payments.push(CartMapper.commercetoolsPaymentToPayment(commercetoolsPayment.obj, locale));
       }
@@ -273,7 +274,7 @@ export class CartMapper {
   ) => Discount[] = (commercetoolsDiscountCodesInfo: CommercetoolsDiscountCodeInfo[] | undefined, locale: Locale) => {
     const discounts: Discount[] = [];
 
-    commercetoolsDiscountCodesInfo?.forEach((commercetoolsDiscountCodeInfo) => {
+    commercetoolsDiscountCodesInfo?.forEach(commercetoolsDiscountCodeInfo => {
       discounts.push(CartMapper.commercetoolsDiscountCodeInfoToDiscountCode(commercetoolsDiscountCodeInfo, locale));
     });
 
@@ -312,9 +313,9 @@ export class CartMapper {
   ) => {
     const discountTexts: string[] = [];
 
-    commercetoolsDiscountedLineItemPricesForQuantity?.forEach((commercetoolsDiscountedLineItemPriceForQuantity) => {
+    commercetoolsDiscountedLineItemPricesForQuantity?.forEach(commercetoolsDiscountedLineItemPriceForQuantity => {
       commercetoolsDiscountedLineItemPriceForQuantity.discountedPrice.includedDiscounts.forEach(
-        (commercetoolsDiscountedLineItemPortion) => {
+        commercetoolsDiscountedLineItemPortion => {
           discountTexts.push(commercetoolsDiscountedLineItemPortion.discount.obj?.name[locale.language]);
         },
       );
@@ -332,9 +333,9 @@ export class CartMapper {
   ) => {
     const discounts: Discount[] = [];
 
-    commercetoolsDiscountedLineItemPricesForQuantity?.forEach((commercetoolsDiscountedLineItemPriceForQuantity) => {
+    commercetoolsDiscountedLineItemPricesForQuantity?.forEach(commercetoolsDiscountedLineItemPriceForQuantity => {
       commercetoolsDiscountedLineItemPriceForQuantity.discountedPrice.includedDiscounts.forEach(
-        (commercetoolsDiscountedLineItemPortion) => {
+        commercetoolsDiscountedLineItemPortion => {
           discounts.push(
             CartMapper.commercetoolsDiscountedLineItemPortionToDiscount(commercetoolsDiscountedLineItemPortion, locale),
           );
@@ -379,7 +380,7 @@ export class CartMapper {
 
     return {
       amount: ProductMapper.commercetoolsMoneyToMoney(commercetoolsTaxedPrice.totalNet),
-      taxPortions: commercetoolsTaxedPrice.taxPortions.map((commercetoolsTaxPortion) => {
+      taxPortions: commercetoolsTaxedPrice.taxPortions.map(commercetoolsTaxPortion => {
         const taxPortion: TaxPortion = {
           amount: ProductMapper.commercetoolsMoneyToMoney(commercetoolsTaxPortion.amount),
           name: commercetoolsTaxPortion.name,

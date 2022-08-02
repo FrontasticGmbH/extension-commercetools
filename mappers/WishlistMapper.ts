@@ -4,6 +4,7 @@ import { ShoppingListDraft } from '@commercetools/platform-sdk/dist/declarations
 import { Locale } from '../Locale';
 import { LineItem } from '../../../types/wishlist/LineItem';
 import { ProductRouter } from '../utils/ProductRouter';
+import { ProductMapper } from './ProductMapper';
 
 export class WishlistMapper {
   static commercetoolsShoppingListToWishlist = (commercetoolsShoppingList: ShoppingList, locale: Locale): Wishlist => {
@@ -13,7 +14,7 @@ export class WishlistMapper {
       anonymousId: commercetoolsShoppingList.anonymousId,
       accountId: commercetoolsShoppingList.customer?.id ?? undefined,
       name: commercetoolsShoppingList.name[locale.language],
-      lineItems: (commercetoolsShoppingList.lineItems || []).map((lineItem) =>
+      lineItems: (commercetoolsShoppingList.lineItems || []).map(lineItem =>
         WishlistMapper.commercetoolsLineItemToLineItem(lineItem, locale),
       ),
     };
@@ -25,14 +26,12 @@ export class WishlistMapper {
   ): LineItem => {
     const lineItem: LineItem = {
       lineItemId: commercetoolsLineItem.id,
+      productId: commercetoolsLineItem.productId,
       name: commercetoolsLineItem.name[locale.language],
       type: 'variant',
       addedAt: new Date(commercetoolsLineItem.addedAt),
       count: commercetoolsLineItem.quantity,
-      variant: {
-        sku: commercetoolsLineItem.variant.sku,
-        images: commercetoolsLineItem.variant?.images?.map((image) => image.url),
-      },
+      variant: ProductMapper.commercetoolsProductVariantToVariant(commercetoolsLineItem.variant, locale),
     };
     lineItem._url = ProductRouter.generateUrlFor(lineItem);
     return lineItem;
