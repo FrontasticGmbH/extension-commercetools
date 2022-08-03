@@ -253,8 +253,12 @@ export const setShippingMethod: ActionHook = async (request: Request, actionCont
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
   let cart = await CartFetcher.fetchCart(request, actionContext);
 
+  const body: {
+    shippingMethod?: { id?: string };
+  } = JSON.parse(request.body);
+
   const shippingMethod: ShippingMethod = {
-    shippingMethodId: request.query.shippingMethodId,
+    shippingMethodId: body.shippingMethod?.id,
   };
 
   cart = await cartApi.setShippingMethod(cart, shippingMethod);
