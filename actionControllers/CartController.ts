@@ -10,6 +10,7 @@ import { CartApi } from '../apis/CartApi';
 import { getLocale } from '../utils/Request';
 import { Discount } from '../../../types/cart/Discount';
 import { EmailApi } from '../apis/EmailApi';
+import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 type ControllerResponse = Response & {
   error?: string;
@@ -197,7 +198,7 @@ export const getOrders: ActionHook = async (request: Request, actionContext: Act
   const account = request.sessionData?.account !== undefined ? request.sessionData.account : undefined;
 
   if (account === undefined) {
-    throw new Error('Not logged in.');
+    throw new AccountAuthenticationError({ message: 'Not logged in.' });
   }
 
   const orders = await cartApi.getOrders(account);
