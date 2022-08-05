@@ -37,6 +37,9 @@ import { isReadyForCheckout } from '../utils/Cart';
 import { Discount } from '../../../types/cart/Discount';
 import { ActionResult } from '@Types/result/ActionResult';
 import { ExternalError } from '../utils/Errors';
+import { CartNotCompleteError } from '../errors/CartNotCompleteError';
+import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
+import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 
 export class CartApi extends BaseApi {
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
@@ -319,7 +322,7 @@ export class CartApi extends BaseApi {
     };
 
     if (!isReadyForCheckout(cart)) {
-      throw new Error('Cart not complete yet.');
+      throw new CartNotCompleteError({ message: 'Cart not complete yet.' });
     }
 
     return await this.getApiForProject()
@@ -477,7 +480,7 @@ export class CartApi extends BaseApi {
     const originalPayment = cart.payments.find(cartPayment => cartPayment.id === payment.id);
 
     if (originalPayment === undefined) {
-      throw new Error(`Payment ${payment.id} not found in cart ${cart.cartId}`);
+      throw new CartPaymentNotFoundError({ message: `Payment ${payment.id} not found in cart ${cart.cartId}` });
     }
 
     const paymentUpdateActions: PaymentUpdateAction[] = [];
