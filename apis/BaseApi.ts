@@ -4,9 +4,9 @@ import { Context } from '@frontastic/extension-types';
 import { getConfig } from '../utils/GetConfig';
 import { Locale } from '../Locale';
 import { ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk/dist/declarations/src/generated/client/by-project-key-request-builder';
+import { LocaleError } from '../errors/LocaleError';
 
-const localeRegex =
-  /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
+const localeRegex = /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
 const languageToTerritory = {
   en: 'GB',
@@ -276,7 +276,7 @@ const parseLocale = (locale: string): ParsedLocale => {
   const matches = locale.match(localeRegex);
 
   if (matches === null) {
-    throw new Error(`Invalid locale: ${locale}`);
+    throw new LocaleError({ message: `Invalid locale: ${locale}` });
   }
 
   const language = matches.groups.language;
@@ -297,7 +297,7 @@ const parseLocale = (locale: string): ParsedLocale => {
     if (modifier in modifierToCurrency) {
       currency = modifierToCurrency[modifier];
     } else {
-      const foundCurrency = Object.values(territoryToCurrency).find((currency) => currency === modifier.toUpperCase());
+      const foundCurrency = Object.values(territoryToCurrency).find(currency => currency === modifier.toUpperCase());
       if (foundCurrency !== undefined) {
         currency = foundCurrency;
       }
@@ -330,7 +330,7 @@ const productTypesCache: {
 
 const pickCandidate = (candidates: string[], availableOptions: string[]): string | undefined => {
   for (const candidate of candidates) {
-    const found = availableOptions.find((option) => option.toLowerCase() === candidate.toLowerCase());
+    const found = availableOptions.find(option => option.toLowerCase() === candidate.toLowerCase());
     if (found !== undefined) {
       return found;
     }
@@ -348,7 +348,7 @@ const pickCommercetoolsLanguage = (parsedLocale: ParsedLocale, availableLanguage
   }
 
   const prefix = `${parsedLocale.language.toLowerCase()}-`;
-  const foundPrefix = availableLanguages.find((option) => option.toLowerCase().startsWith(prefix));
+  const foundPrefix = availableLanguages.find(option => option.toLowerCase().startsWith(prefix));
   if (foundPrefix !== undefined) {
     return foundPrefix;
   }
@@ -426,7 +426,10 @@ export abstract class BaseApi {
       }
     }
 
-    const response = await this.getApiForProject().productTypes().get().execute();
+    const response = await this.getApiForProject()
+      .productTypes()
+      .get()
+      .execute();
 
     const productTypes = response.body.results;
 
@@ -448,7 +451,9 @@ export abstract class BaseApi {
       }
     }
 
-    const response = await this.getApiForProject().get().execute();
+    const response = await this.getApiForProject()
+      .get()
+      .execute();
     const project = response.body;
 
     projectCache[this.projectKey] = {
