@@ -38,7 +38,6 @@ import { Discount } from '../../../types/cart/Discount';
 import { ActionResult } from '@Types/result/ActionResult';
 import { ExternalError } from '../utils/Errors';
 import { CartNotCompleteError } from '../errors/CartNotCompleteError';
-import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 
 export class CartApi extends BaseApi {
