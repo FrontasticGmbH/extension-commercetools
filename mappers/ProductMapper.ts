@@ -87,8 +87,6 @@ export class ProductMapper {
     commercetoolsVariant: CommercetoolsProductVariant,
     locale: Locale,
   ) => Variant = (commercetoolsVariant: CommercetoolsProductVariant, locale: Locale) => {
-    console.debug('commercetoolsVariant:: ', commercetoolsVariant);
-
     const attributes = commercetoolsVariant.attributes
       ? ProductMapper.commercetoolsAttributesToAttributes(commercetoolsVariant.attributes, locale)
       : [];
