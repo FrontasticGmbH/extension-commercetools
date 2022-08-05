@@ -14,7 +14,6 @@ import { Address } from '../../../types/account/Address';
 import { Guid } from '../utils/Guid';
 import { PasswordResetToken } from '../../../types/account/PasswordResetToken';
 import { ExternalError, ValidationError } from '../utils/Errors';
-import { AccountEmailNotActiveError } from '../../../../../saas/project-libraries/extensions/commerce-commercetools/errors/AccountEmailNotActiveError';
 import { AccountEmailDuplicatedError } from '../errors/AccountEmailDuplicatedError';
 
 export class AccountApi extends BaseApi {
