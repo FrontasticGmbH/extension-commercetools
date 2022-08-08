@@ -111,11 +111,8 @@ export default {
   },
   'data-sources': {
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-      console.log('Start of execution: frontastic/product-list');
       const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
-      console.warn('Showing a warning: ', { productQuery });
-      console.error('Showing an error: fake error');
       return await productApi.query(productQuery).then(queryResult => {
         return {
           dataSourcePayload: queryResult,
