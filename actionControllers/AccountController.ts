@@ -6,6 +6,7 @@ import { Address } from '../../../types/account/Address';
 import { CartFetcher } from '../utils/CartFetcher';
 import { getLocale } from '../utils/Request';
 import { EmailApi } from '../apis/EmailApi';
+import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -44,7 +45,7 @@ function assertIsAuthenticated(request: Request) {
   const account = fetchAccountFromSession(request);
 
   if (account === undefined) {
-    throw new Error('Not logged in.');
+    throw new AccountAuthenticationError({ message: 'Not logged in.' });
   }
 }
 
@@ -260,7 +261,7 @@ export const requestReset: ActionHook = async (request: Request, actionContext: 
     email?: string;
     host?: string;
   };
-    
+
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
   const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
 
