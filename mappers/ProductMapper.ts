@@ -49,10 +49,11 @@ const TypeMap = new Map<string, string>([
 export class ProductMapper {
   static commercetoolsProductProjectionToProduct: (
     commercetoolsProduct: CommercetoolsProductProjection,
+    productIdField: string,
     locale: Locale,
-  ) => Product = (commercetoolsProduct: CommercetoolsProductProjection, locale: Locale) => {
+  ) => Product = (commercetoolsProduct: CommercetoolsProductProjection, productIdField: string, locale: Locale) => {
     const product: Product = {
-      productId: commercetoolsProduct.id,
+      productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),
       name: commercetoolsProduct?.name?.[locale.language],
       slug: commercetoolsProduct?.slug?.[locale.language],

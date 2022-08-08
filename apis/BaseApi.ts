@@ -385,6 +385,7 @@ const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrenci
 export abstract class BaseApi {
   protected apiRoot: ApiRoot;
   protected projectKey: string;
+  protected productIdField: string;
   protected locale: string;
 
   constructor(frontasticContext: Context, locale: string | null) {
@@ -396,6 +397,7 @@ export abstract class BaseApi {
 
     this.apiRoot = createApiBuilderFromCtpClient(client);
     this.projectKey = clientSettings.projectKey;
+    this.productIdField = clientSettings?.productIdField || 'key';
   }
 
   protected getApiForProject(): ByProjectKeyRequestBuilder {

@@ -40,7 +40,7 @@ export class ProductApi extends BaseApi {
     const queryArgFacets = ProductMapper.facetDefinitionsToCommercetoolsQueryArgFacets(facetDefinitions, locale);
 
     if (productQuery.productIds !== undefined && productQuery.productIds.length !== 0) {
-      filterQuery.push(`id:"${productQuery.productIds.join('","')}"`);
+      filterQuery.push(`${this.productIdField}:"${productQuery.productIds.join('","')}"`);
     }
 
     if (productQuery.skus !== undefined && productQuery.skus.length !== 0) {
@@ -108,7 +108,7 @@ export class ProductApi extends BaseApi {
       .execute()
       .then(response => {
         const items = response.body.results.map(product =>
-          ProductMapper.commercetoolsProductProjectionToProduct(product, locale),
+          ProductMapper.commercetoolsProductProjectionToProduct(product, this.productIdField, locale),
         );
 
         const result: Result = {

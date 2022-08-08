@@ -5,4 +5,5 @@ export interface ClientConfig {
   clientSecret: string;
   hostUrl: string;
   projectKey: string;
+  productIdField?: string;
 }
