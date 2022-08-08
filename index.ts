@@ -21,6 +21,7 @@ import { Result } from '../../types/product/Result';
 import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
+import { ValidationError } from './utils/Errors';
 
 export default {
   'dynamic-page-handler': async (
@@ -124,19 +125,21 @@ export default {
 
     'frontastic/similar-products': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       if (!context.hasOwnProperty('request')) {
-        throw new Error(`Request is not defined in context ${context}`);
+        throw new ValidationError({
+          message: `Request is not defined in context ${context}`,
+        });
       }
 
       const productApi = new ProductApi(context.frontasticContext, getLocale(context.request));
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
       const queryWithCategoryId = {
         ...productQuery,
-        category: (
-          context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any
-        )?.preloadedValue?.product?.categories?.[0]?.categoryId,
+        category: (context.pageFolder.dataSourceConfigurations.find(
+          stream => (stream as any).streamId === '__master',
+        ) as any)?.preloadedValue?.product?.categories?.[0]?.categoryId,
       };
 
-      return await productApi.query(queryWithCategoryId).then((queryResult) => {
+      return await productApi.query(queryWithCategoryId).then(queryResult => {
         return {
           dataSourcePayload: queryResult,
         };
@@ -148,7 +151,7 @@ export default {
 
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
-      return await productApi.getProduct(productQuery).then((queryResult) => {
+      return await productApi.getProduct(productQuery).then(queryResult => {
         return {
           dataSourcePayload: {
             product: queryResult,

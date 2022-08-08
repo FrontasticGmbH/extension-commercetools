@@ -3,6 +3,7 @@ import { WishlistApi } from '../apis/WishlistApi';
 import { Guid } from '../utils/Guid';
 import { Account } from '../../../types/account/Account';
 import { getLocale } from '../utils/Request';
+import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -17,7 +18,7 @@ function fetchAccountFromSession(request: Request): Account | undefined {
 function fetchAccountFromSessionEnsureLoggedIn(request: Request): Account {
   const account = fetchAccountFromSession(request);
   if (!account) {
-    throw new Error('Not logged in.');
+    throw new AccountAuthenticationError({ message: 'Not logged in.' });
   }
   return account;
 }

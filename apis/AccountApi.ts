@@ -385,21 +385,13 @@ export class AccountApi extends BaseApi {
     account: Account,
     address: Address,
   ) => {
-    try {
-      const customerUpdateActions: CustomerUpdateAction[] = [];
+    const customerUpdateActions: CustomerUpdateAction[] = [];
 
-      const addressData = AccountMapper.addressToCommercetoolsAddress(address);
+    const addressData = AccountMapper.addressToCommercetoolsAddress(address);
 
-      customerUpdateActions.push({ action: 'setDefaultBillingAddress', addressId: addressData.id });
+    customerUpdateActions.push({ action: 'setDefaultBillingAddress', addressId: addressData.id });
 
-      return await this.updateAccount(account, customerUpdateActions);
-    } catch (error) {
-      if (error instanceof ExternalError) {
-        throw error;
-      }
-
-      throw new Error(`setDefaultBillingAddress failed. ${error}`);
-    }
+    return await this.updateAccount(account, customerUpdateActions);
   };
 
   setDefaultShippingAddress: (account: Account, address: Address) => Promise<Account> = async (
