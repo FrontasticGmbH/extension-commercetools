@@ -5,6 +5,7 @@ import { getConfig } from '../utils/GetConfig';
 import { Locale } from '../Locale';
 import { ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk/dist/declarations/src/generated/client/by-project-key-request-builder';
 import { LocaleError } from '../errors/LocaleError';
+import { ExternalError } from '../utils/Errors';
 
 const localeRegex = /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
@@ -453,7 +454,10 @@ export abstract class BaseApi {
 
     const response = await this.getApiForProject()
       .get()
-      .execute();
+      .execute()
+      .catch(error => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
     const project = response.body;
 
     projectCache[this.projectKey] = {

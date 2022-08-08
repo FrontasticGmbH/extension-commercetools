@@ -3,13 +3,15 @@ import { ProjectSettings } from '../../../types/ProjectSettings';
 
 export class ProjectApi extends BaseApi {
   getProjectSettings: () => Promise<ProjectSettings> = async () => {
-    const project = await this.getProject();
+    return await this.getProject().then(response => {
+      const projectSettings: ProjectSettings = {
+        name: response.name,
+        countries: response.countries,
+        currencies: response.currencies,
+        languages: response.languages,
+      };
 
-    return Promise.resolve({
-      name: project.name,
-      countries: project.countries,
-      currencies: project.currencies,
-      languages: project.languages,
+      return projectSettings;
     });
   };
 }
