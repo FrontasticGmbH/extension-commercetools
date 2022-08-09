@@ -11,6 +11,7 @@ import {
   RangeFacetResult as CommercetoolsRangeFacetResult,
   TermFacetResult as CommercetoolsTermFacetResult,
   TypedMoney,
+  Price as CommercetoolsPrice,
 } from '@commercetools/platform-sdk';
 import { Product } from '../../../types/product/Product';
 import { Variant } from '../../../types/product/Variant';
@@ -206,14 +207,13 @@ export class ProductMapper {
       return { price, discountedPrice, discounts };
     }
 
-    if (commercetoolsVariant?.prices) {
-      //TODO select price based on channel and customerGroup, for now ignore it
-      let p: any = commercetoolsVariant?.prices.find((p: any) => {
+    if (commercetoolsVariant?.prices) {      
+      let p: CommercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
         return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && p.country === locale.country && p.value.currencyCode === locale.currency;
       });
 
       if (!p) {
-        p = commercetoolsVariant?.prices.find((p: any) => {
+        p = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
           return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && !p.hasOwnProperty('country') && p.value.currencyCode === locale.currency;
         })
       }
