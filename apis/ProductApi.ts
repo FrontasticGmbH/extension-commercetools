@@ -98,6 +98,7 @@ export class ProductApi extends BaseApi {
         'filter.facets': filterFacets.length > 0 ? filterFacets : undefined,
         'filter.query': filterQuery.length > 0 ? filterQuery : undefined,
         [`text.${locale.language}`]: productQuery.query,
+        expand: ['categories[*].ancestors[*]'],
       },
     };
 
@@ -108,7 +109,12 @@ export class ProductApi extends BaseApi {
       .execute()
       .then(response => {
         const items = response.body.results.map(product =>
-          ProductMapper.commercetoolsProductProjectionToProduct(product, this.productIdField, locale),
+          ProductMapper.commercetoolsProductProjectionToProduct(
+            product,
+            this.productIdField,
+            this.categoryIdField,
+            locale,
+          ),
         );
 
         const result: Result = {
@@ -175,15 +181,12 @@ export class ProductApi extends BaseApi {
       where.push(`slug(${locale.language}="${categoryQuery.slug}")`);
     }
 
-    if (categoryQuery.parentId) {
-      where.push(`parent(id="${categoryQuery.parentId}")`);
-    }
-
     const methodArgs = {
       queryArgs: {
         limit: limit,
         offset: this.getOffsetFromCursor(categoryQuery.cursor),
         where: where.length > 0 ? where : undefined,
+        expand: ['ancestors[*]'],
       },
     };
 
@@ -193,7 +196,7 @@ export class ProductApi extends BaseApi {
       .execute()
       .then(response => {
         const items = response.body.results.map(category =>
-          ProductMapper.commercetoolsCategoryToCategory(category, locale),
+          ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
         );
 
         const result: Result = {

@@ -13,5 +13,6 @@ export const getConfig = (project: Project, engine: string, locale: string | nul
     hostUrl: project.configuration?.[engine].hostUrl,
     projectKey: project.configuration?.[engine].projectKey,
     productIdField: project.configuration?.[engine]?.productIdField,
+    categoryIdField: project.configuration?.[engine]?.categoryIdField,
   } as ClientConfig;
 };

@@ -6,4 +6,5 @@ export interface ClientConfig {
   hostUrl: string;
   projectKey: string;
   productIdField?: string;
+  categoryIdField?: string;
 }

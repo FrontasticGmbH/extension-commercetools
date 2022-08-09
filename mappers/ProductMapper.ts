@@ -51,15 +51,25 @@ export class ProductMapper {
   static commercetoolsProductProjectionToProduct: (
     commercetoolsProduct: CommercetoolsProductProjection,
     productIdField: string,
+    categoryIdField: string,
     locale: Locale,
-  ) => Product = (commercetoolsProduct: CommercetoolsProductProjection, productIdField: string, locale: Locale) => {
+  ) => Product = (
+    commercetoolsProduct: CommercetoolsProductProjection,
+    productIdField: string,
+    categoryIdField: string,
+    locale: Locale,
+  ) => {
     const product: Product = {
       productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),
       name: commercetoolsProduct?.name?.[locale.language],
       slug: commercetoolsProduct?.slug?.[locale.language],
       description: commercetoolsProduct?.description?.[locale.language],
-      categories: ProductMapper.commercetoolsCategoryReferencesToCategories(commercetoolsProduct.categories, locale),
+      categories: ProductMapper.commercetoolsCategoryReferencesToCategories(
+        commercetoolsProduct.categories,
+        categoryIdField,
+        locale,
+      ),
       variants: ProductMapper.commercetoolsProductProjectionToVariants(commercetoolsProduct, locale),
     };
 
@@ -128,31 +138,30 @@ export class ProductMapper {
 
   static commercetoolsCategoryReferencesToCategories: (
     commercetoolsCategoryReferences: CategoryReference[],
+    categoryIdField: string,
     locale: Locale,
-  ) => Category[] = (commercetoolsCategoryReferences: CategoryReference[], locale: Locale) => {
+  ) => Category[] = (commercetoolsCategoryReferences: CategoryReference[], categoryIdField: string, locale: Locale) => {
     const categories: Category[] = [];
 
     commercetoolsCategoryReferences.forEach(commercetoolsCategory => {
-      let category: Category = {
-        categoryId: commercetoolsCategory.id,
-      };
-
       if (commercetoolsCategory.obj) {
-        category = ProductMapper.commercetoolsCategoryToCategory(commercetoolsCategory.obj, locale);
+        categories.push(
+          ProductMapper.commercetoolsCategoryToCategory(commercetoolsCategory.obj, categoryIdField, locale),
+        );
       }
-
-      categories.push(category);
     });
 
     return categories;
   };
 
-  static commercetoolsCategoryToCategory: (commercetoolsCategory: CommercetoolsCategory, locale: Locale) => Category = (
+  static commercetoolsCategoryToCategory: (
     commercetoolsCategory: CommercetoolsCategory,
+    categoryIdField: string,
     locale: Locale,
-  ) => {
+  ) => Category = (commercetoolsCategory: CommercetoolsCategory, categoryIdField: string, locale: Locale) => {
+    console.debug('commercetoolsCategory:: ', commercetoolsCategory);
     return {
-      categoryId: commercetoolsCategory.id,
+      categoryId: commercetoolsCategory?.[categoryIdField],
       name: commercetoolsCategory.name?.[locale.language] ?? undefined,
       slug: commercetoolsCategory.slug?.[locale.language] ?? undefined,
       depth: commercetoolsCategory.ancestors.length,
@@ -160,10 +169,10 @@ export class ProductMapper {
         commercetoolsCategory.ancestors.length > 0
           ? `/${commercetoolsCategory.ancestors
               .map(ancestor => {
-                return ancestor.id;
+                return ancestor?.obj?.slug?.[locale.language];
               })
-              .join('/')}/${commercetoolsCategory.id}`
-          : `/${commercetoolsCategory.id}`,
+              .join('/')}/${commercetoolsCategory?.slug?.[locale.language]}`
+          : `/${commercetoolsCategory?.slug?.[locale.language]}`,
     };
   };
 
