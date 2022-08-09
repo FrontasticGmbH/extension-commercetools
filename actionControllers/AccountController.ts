@@ -128,7 +128,7 @@ export const getAccount: ActionHook = async (request: Request, actionContext: Ac
 
 export const register: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const accountData = mapRequestToAccount(request);
   const host = JSON.parse(request.body).host;
@@ -141,7 +141,7 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 
   const response: Response = {
     statusCode: 200,
-    body: JSON.stringify({ accountId: account.accountId }),
+    body: JSON.stringify({ account: account }),
     sessionData: {
       ...request.sessionData,
     },
@@ -154,7 +154,7 @@ export const resendVerificationEmail: ActionHook = async (request: Request, acti
   const data = JSON.parse(request.body) as Account;
   const host = JSON.parse(request.body).host;
 
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const reverify = true; //Will not login the account instead will send a reverification email..
 
@@ -263,7 +263,7 @@ export const requestReset: ActionHook = async (request: Request, actionContext: 
   };
 
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const accountRequestResetBody: AccountRequestResetBody = JSON.parse(request.body);
 

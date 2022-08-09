@@ -1,38 +1,30 @@
 import * as nodemailer from 'nodemailer';
 import { Account } from '../../../types/account/Account';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { Context, Project } from '@frontastic/extension-types';
+import { SmtpConfig } from '../interfaces/SmtpConfig';
 
 export class EmailApi {
-  //email transporter
+  // Email transporter
   transport: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
 
-  //sender email
+  // Sender email
   sender: string;
 
-  //client host
   client_host: string;
 
-  constructor(credentials: {
-    host: string;
-    port: number;
-    encryption: string;
-    user: string;
-    password: string;
-    sender: string;
-    client_host: string;
-  }) {
-    //set client host
-    this.client_host = credentials.client_host;
-    //set sender email
-    this.sender = credentials.sender;
-    //initialize transporter
+  constructor(frontasticContext: Context) {
+    const smtpConfig = this.getSmtpConfig(frontasticContext.project);
+
+    this.client_host = smtpConfig.client_host;
+    this.sender = smtpConfig.sender;
     this.transport = nodemailer.createTransport({
-      host: credentials.host,
-      port: +credentials.port,
-      secure: credentials.port == 465,
+      host: smtpConfig.host,
+      port: +smtpConfig.port,
+      secure: smtpConfig.port == 465,
       auth: {
-        user: credentials.user,
-        pass: credentials.password,
+        user: smtpConfig.user,
+        pass: smtpConfig.password,
       },
     });
   }
@@ -120,5 +112,24 @@ export class EmailApi {
         html,
       });
     } catch (error) {}
+  }
+
+  protected getSmtpConfig(project: Project): SmtpConfig {
+    if (!project.configuration.hasOwnProperty('smtp')) {
+      // TODO: create a new exception for missing configuration
+      throw new Error(`smtp configuration missing in project ${project.projectId}`);
+    }
+
+    const smtpConfig: SmtpConfig = {
+      host: project.configuration.smtp.host,
+      port: project.configuration.smtp.port,
+      encryption: project.configuration.smtp.encryption,
+      user: project.configuration.smtp.user,
+      password: project.configuration.smtp.password,
+      sender: project.configuration.smtp.sender,
+      client_host: project.configuration.smtp.client_host,
+    };
+
+    return smtpConfig;
   }
 }
