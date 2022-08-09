@@ -84,7 +84,7 @@ export default {
           return {
             dynamicPageType: 'frontastic/category',
             dataSourcePayload: {
-              totalItems: result.total,
+              total: result.total,
               items: result.items,
               facets: result.facets,
               previousCursor: result.previousCursor,
@@ -92,7 +92,7 @@ export default {
               category: getPath(request),
             },
             pageMatchingPayload: {
-              totalItems: result.total,
+              total: result.total,
               items: result.items,
               facets: result.facets,
               previousCursor: result.previousCursor,
