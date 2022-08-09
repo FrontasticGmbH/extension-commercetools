@@ -3,6 +3,7 @@ import { Account } from '../../../types/account/Account';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { Context, Project } from '@frontastic/extension-types';
 import { SmtpConfig } from '../interfaces/SmtpConfig';
+import { SmtpConfigurationError } from '../errors/SmtpConfigurationError';
 
 export class EmailApi {
   // Email transporter
@@ -94,8 +95,9 @@ export class EmailApi {
 
   protected getSmtpConfig(project: Project): SmtpConfig {
     if (!project.configuration.hasOwnProperty('smtp')) {
-      // TODO: create a new exception for missing configuration
-      throw new Error(`smtp configuration missing in project ${project.projectId}`);
+      throw new SmtpConfigurationError({
+        message: `The SMTP configuration is missing in project "${project.projectId}"`,
+      });
     }
 
     const smtpConfig: SmtpConfig = {
