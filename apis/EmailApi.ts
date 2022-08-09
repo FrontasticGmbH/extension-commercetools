@@ -8,7 +8,6 @@ export class EmailApi {
   // Email transporter
   transport: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
 
-  // Sender email
   sender: string;
 
   client_host: string;
@@ -29,87 +28,66 @@ export class EmailApi {
     });
   }
 
-  //Use this for debugging/testing purposes
-  async initTest() {
-    // Generate test SMTP service account from ethereal.email
-    // Only needed if you don't have a real mail account for testing
-    const testAccount = await nodemailer.createTestAccount();
-
-    // create reusable transporter object using the default SMTP transport
-    this.transport = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
-      },
-    });
-  }
-
-  getUrl(token: string, relPath: string, host: string) {
-    const path = `${relPath}?token=${token}`;
-    const url = `${host}/${path}`;
-    return url;
-  }
-
   async sendEmail(data: { to: string; subject?: string; text?: string; html?: string }) {
     const from = this.sender;
     const { to, text, html, subject } = data;
     return await this.transport.sendMail({ from, to, subject, text, html });
   }
 
-  async sendVerificationEmail(account: Account, host: string) {
-    if (!account.confirmationToken) return; //no valid confirmation token
-    //Verification url
-    const url = this.getUrl(account.confirmationToken, 'verify', host);
+  async sendVerificationEmail(account: Account) {
+    if (!account.confirmationToken) {
+      console.error(`No valid confirmation token for the account "${account.accountId}"`);
+      return;
+    }
 
-    //message content
-    const html = `
-                  <h1>Thanks for your registration!</h1>
-                  <p style="margin-top: 10px;color:gray;">Please activate your account by clicking the below link</p>
-                  <a href="${url}">${url}</a>
-                `;
-    //send email
+    const verificationUrl = this.getUrl(account.confirmationToken, 'verify');
+
+    const htmlVerificationMessage = `
+      <h1>Thanks for your registration!</h1>
+      <p style="margin-top: 10px;color:gray;">Please activate your account by clicking the below link</p>
+      <a href="${verificationUrl}">${verificationUrl}</a>
+    `;
+
     try {
       await this.sendEmail({
         to: account.email,
         subject: 'Account Verification',
-        html,
+        html: htmlVerificationMessage,
       });
     } catch (error) {}
   }
 
-  async sendPasswordResetEmail(token: string, email: string, host: string) {
-    if (!token) return; //not a valid token
-    //Password reset URL
-    const url = this.getUrl(token, 'reset-password', host);
-    //message content
-    const html = `
-                  <h1>You requested a password reset!</h1>
-                  <p style="margin-top: 10px;color:gray;">Please click the link below to proceed.</p>
-                  <a href="${url}">${url}</a>
-                `;
-    //send email
+  async sendPasswordResetEmail(token: string, email: string) {
+    if (!token) {
+      console.error(`No valid reset token`);
+      return;
+    }
+
+    const url = this.getUrl(token, 'reset-password');
+    const htmlResetPasswordMessage = `
+      <h1>You requested a password reset!</h1>
+      <p style="margin-top: 10px;color:gray;">Please click the link below to proceed.</p>
+      <a href="${url}">${url}</a>
+    `;
+
     await this.sendEmail({
       to: email,
       subject: 'Password Reset',
-      html,
+      html: htmlResetPasswordMessage,
     });
   }
 
   async sendPaymentConfirmationEmail(email: string) {
-    //message content
-    const html = `
-                  <h1>Thanks for your order!</h1>
-                  <p style="margin-top: 10px;color:gray;">Your payment has been confirmed.</p>
-                `;
-    //send email
+    const htmlPaymentConfirmationMessage = `
+      <h1>Thanks for your order!</h1>
+      <p style="margin-top: 10px;color:gray;">Your payment has been confirmed.</p>
+    `;
+
     try {
       await this.sendEmail({
         to: email,
         subject: 'Payment confirmed',
-        html,
+        html: htmlPaymentConfirmationMessage,
       });
     } catch (error) {}
   }
@@ -131,5 +109,11 @@ export class EmailApi {
     };
 
     return smtpConfig;
+  }
+
+  protected getUrl(token: string, relPath: string) {
+    const path = `${relPath}?token=${token}`;
+
+    return `${this.client_host}/${path}`;
   }
 }
