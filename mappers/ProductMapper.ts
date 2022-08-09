@@ -206,6 +206,28 @@ export class ProductMapper {
       return { price, discountedPrice, discounts };
     }
 
+    if (commercetoolsVariant?.prices) {
+      //TODO select price based on channel and customerGroup, for now ignore it
+      let p: any = commercetoolsVariant?.prices.find((p: any) => {
+        return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && p.country === locale.country && p.value.currencyCode === locale.currency;
+      });
+
+      if (!p) {
+        p = commercetoolsVariant?.prices.find((p: any) => {
+          return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && !p.hasOwnProperty('country') && p.value.currencyCode === locale.currency;
+        })
+      }
+
+      price = ProductMapper.commercetoolsMoneyToMoney(p?.value);
+
+      if (p?.discounted?.value)
+        discountedPrice = ProductMapper.commercetoolsMoneyToMoney(p?.discounted?.value);
+      if (p?.discounted?.discount?.obj?.description?.[locale.language])
+        discounts = [p?.discounted?.discount?.obj?.description[locale.language]];
+
+      return { price, discountedPrice, discounts };
+    }
+
     return { price, discountedPrice, discounts };
   }
 
