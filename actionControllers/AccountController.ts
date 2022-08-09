@@ -128,20 +128,19 @@ export const getAccount: ActionHook = async (request: Request, actionContext: Ac
 
 export const register: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const accountData = mapRequestToAccount(request);
-  const host = JSON.parse(request.body).host;
 
   const cart = await CartFetcher.fetchCart(request, actionContext).catch(() => undefined);
 
   const account = await accountApi.create(accountData, cart);
 
-  if (!account.confirmed) await emailApi.sendVerificationEmail(account, host);
+  if (!account.confirmed) await emailApi.sendVerificationEmail(account);
 
   const response: Response = {
     statusCode: 200,
-    body: JSON.stringify({ accountId: account.accountId }),
+    body: JSON.stringify({ account: account }),
     sessionData: {
       ...request.sessionData,
     },
@@ -152,15 +151,14 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 
 export const resendVerificationEmail: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const data = JSON.parse(request.body) as Account;
-  const host = JSON.parse(request.body).host;
 
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const reverify = true; //Will not login the account instead will send a reverification email..
 
   const account = await loginAccount(request, actionContext, data, reverify);
 
-  await emailApi.sendVerificationEmail(account, host);
+  await emailApi.sendVerificationEmail(account);
 
   const response: Response = {
     statusCode: 200,
@@ -259,21 +257,16 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
 export const requestReset: ActionHook = async (request: Request, actionContext: ActionContext) => {
   type AccountRequestResetBody = {
     email?: string;
-    host?: string;
   };
 
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   const accountRequestResetBody: AccountRequestResetBody = JSON.parse(request.body);
 
   const passwordResetToken = await accountApi.generatePasswordResetToken(accountRequestResetBody.email);
 
-  await emailApi.sendPasswordResetEmail(
-    passwordResetToken.confirmationToken,
-    accountRequestResetBody.email,
-    accountRequestResetBody.host,
-  );
+  await emailApi.sendPasswordResetEmail(passwordResetToken.confirmationToken, accountRequestResetBody.email);
 
   return {
     statusCode: 200,

@@ -1,64 +1,32 @@
 import * as nodemailer from 'nodemailer';
 import { Account } from '../../../types/account/Account';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { Context, Project } from '@frontastic/extension-types';
+import { SmtpConfig } from '../interfaces/SmtpConfig';
+import { SmtpConfigurationError } from '../errors/SmtpConfigurationError';
 
 export class EmailApi {
-  //email transporter
+  // Email transporter
   transport: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
 
-  //sender email
   sender: string;
 
-  //client host
   client_host: string;
 
-  constructor(credentials: {
-    host: string;
-    port: number;
-    encryption: string;
-    user: string;
-    password: string;
-    sender: string;
-    client_host: string;
-  }) {
-    //set client host
-    this.client_host = credentials.client_host;
-    //set sender email
-    this.sender = credentials.sender;
-    //initialize transporter
+  constructor(frontasticContext: Context) {
+    const smtpConfig = this.getSmtpConfig(frontasticContext.project);
+
+    this.client_host = smtpConfig.client_host;
+    this.sender = smtpConfig.sender;
     this.transport = nodemailer.createTransport({
-      host: credentials.host,
-      port: +credentials.port,
-      secure: credentials.port == 465,
+      host: smtpConfig.host,
+      port: +smtpConfig.port,
+      secure: smtpConfig.port == 465,
       auth: {
-        user: credentials.user,
-        pass: credentials.password,
+        user: smtpConfig.user,
+        pass: smtpConfig.password,
       },
     });
-  }
-
-  //Use this for debugging/testing purposes
-  async initTest() {
-    // Generate test SMTP service account from ethereal.email
-    // Only needed if you don't have a real mail account for testing
-    const testAccount = await nodemailer.createTestAccount();
-
-    // create reusable transporter object using the default SMTP transport
-    this.transport = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
-      },
-    });
-  }
-
-  getUrl(token: string, relPath: string, host: string) {
-    const path = `${relPath}?token=${token}`;
-    const url = `${host}/${path}`;
-    return url;
   }
 
   async sendEmail(data: { to: string; subject?: string; text?: string; html?: string }) {
@@ -67,58 +35,87 @@ export class EmailApi {
     return await this.transport.sendMail({ from, to, subject, text, html });
   }
 
-  async sendVerificationEmail(account: Account, host: string) {
-    if (!account.confirmationToken) return; //no valid confirmation token
-    //Verification url
-    const url = this.getUrl(account.confirmationToken, 'verify', host);
+  async sendVerificationEmail(account: Account) {
+    if (!account.confirmationToken) {
+      console.error(`No valid confirmation token for the account "${account.accountId}"`);
+      return;
+    }
 
-    //message content
-    const html = `
-                  <h1>Thanks for your registration!</h1>
-                  <p style="margin-top: 10px;color:gray;">Please activate your account by clicking the below link</p>
-                  <a href="${url}">${url}</a>
-                `;
-    //send email
+    const verificationUrl = this.getUrl(account.confirmationToken, 'verify');
+
+    const htmlVerificationMessage = `
+      <h1>Thanks for your registration!</h1>
+      <p style="margin-top: 10px;color:gray;">Please activate your account by clicking the below link</p>
+      <a href="${verificationUrl}">${verificationUrl}</a>
+    `;
+
     try {
       await this.sendEmail({
         to: account.email,
         subject: 'Account Verification',
-        html,
+        html: htmlVerificationMessage,
       });
     } catch (error) {}
   }
 
-  async sendPasswordResetEmail(token: string, email: string, host: string) {
-    if (!token) return; //not a valid token
-    //Password reset URL
-    const url = this.getUrl(token, 'reset-password', host);
-    //message content
-    const html = `
-                  <h1>You requested a password reset!</h1>
-                  <p style="margin-top: 10px;color:gray;">Please click the link below to proceed.</p>
-                  <a href="${url}">${url}</a>
-                `;
-    //send email
+  async sendPasswordResetEmail(token: string, email: string) {
+    if (!token) {
+      console.error(`No valid reset token`);
+      return;
+    }
+
+    const url = this.getUrl(token, 'reset-password');
+    const htmlResetPasswordMessage = `
+      <h1>You requested a password reset!</h1>
+      <p style="margin-top: 10px;color:gray;">Please click the link below to proceed.</p>
+      <a href="${url}">${url}</a>
+    `;
+
     await this.sendEmail({
       to: email,
       subject: 'Password Reset',
-      html,
+      html: htmlResetPasswordMessage,
     });
   }
 
   async sendPaymentConfirmationEmail(email: string) {
-    //message content
-    const html = `
-                  <h1>Thanks for your order!</h1>
-                  <p style="margin-top: 10px;color:gray;">Your payment has been confirmed.</p>
-                `;
-    //send email
+    const htmlPaymentConfirmationMessage = `
+      <h1>Thanks for your order!</h1>
+      <p style="margin-top: 10px;color:gray;">Your payment has been confirmed.</p>
+    `;
+
     try {
       await this.sendEmail({
         to: email,
         subject: 'Payment confirmed',
-        html,
+        html: htmlPaymentConfirmationMessage,
       });
     } catch (error) {}
+  }
+
+  protected getSmtpConfig(project: Project): SmtpConfig {
+    if (!project.configuration.hasOwnProperty('smtp')) {
+      throw new SmtpConfigurationError({
+        message: `The SMTP configuration is missing in project "${project.projectId}"`,
+      });
+    }
+
+    const smtpConfig: SmtpConfig = {
+      host: project.configuration.smtp.host,
+      port: project.configuration.smtp.port,
+      encryption: project.configuration.smtp.encryption,
+      user: project.configuration.smtp.user,
+      password: project.configuration.smtp.password,
+      sender: project.configuration.smtp.sender,
+      client_host: project.configuration.smtp.client_host,
+    };
+
+    return smtpConfig;
+  }
+
+  protected getUrl(token: string, relPath: string) {
+    const path = `${relPath}?token=${token}`;
+
+    return `${this.client_host}/${path}`;
   }
 }

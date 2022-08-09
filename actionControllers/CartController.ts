@@ -171,7 +171,7 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
 
 export const checkout: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext.project.configuration.smtp);
+  const emailApi = new EmailApi(actionContext.frontasticContext);
 
   let cart = await updateCartFromRequest(request, actionContext);
   cart = await cartApi.order(cart);
