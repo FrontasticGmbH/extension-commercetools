@@ -208,22 +208,22 @@ export class ProductMapper {
     }
 
     if (commercetoolsVariant?.prices) {      
-      let p: CommercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
+      let commercetoolsPrice: CommercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
         return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && p.country === locale.country && p.value.currencyCode === locale.currency;
       });
 
-      if (!p) {
-        p = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
+      if (!commercetoolsPrice) {
+        commercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
           return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && !p.hasOwnProperty('country') && p.value.currencyCode === locale.currency;
         })
       }
 
-      price = ProductMapper.commercetoolsMoneyToMoney(p?.value);
+      price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsPrice?.value);
 
-      if (p?.discounted?.value)
-        discountedPrice = ProductMapper.commercetoolsMoneyToMoney(p?.discounted?.value);
-      if (p?.discounted?.discount?.obj?.description?.[locale.language])
-        discounts = [p?.discounted?.discount?.obj?.description[locale.language]];
+      if (commercetoolsPrice?.discounted?.value)
+        discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsPrice?.discounted?.value);
+      if (commercetoolsPrice?.discounted?.discount?.obj?.description?.[locale.language])
+        discounts = [commercetoolsPrice?.discounted?.discount?.obj?.description[locale.language]];
 
       return { price, discountedPrice, discounts };
     }
