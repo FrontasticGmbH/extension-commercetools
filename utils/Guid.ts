@@ -1,4 +1,4 @@
-import now from "performance-now";
+import now from 'performance-now';
 export class Guid {
   static newGuid = (noHyphens?: boolean) => {
     let d = new Date().getTime();

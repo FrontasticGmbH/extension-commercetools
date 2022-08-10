@@ -58,7 +58,7 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
@@ -87,10 +87,10 @@ export class CartApi extends BaseApi {
         body: cartDraft,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return this.buildCartWithAvailableShippingMethods(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -113,7 +113,7 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
@@ -142,10 +142,10 @@ export class CartApi extends BaseApi {
         body: cartDraft,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return this.buildCartWithAvailableShippingMethods(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -169,10 +169,10 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return this.buildCartWithAvailableShippingMethods(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -337,10 +337,10 @@ export class CartApi extends BaseApi {
         body: orderFromCartDraft,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return CartMapper.commercetoolsOrderToOrder(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -362,10 +362,10 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
-        return response.body.results.map(order => CartMapper.commercetoolsOrderToOrder(order, locale));
+      .then((response) => {
+        return response.body.results.map((order) => CartMapper.commercetoolsOrderToOrder(order, locale));
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -380,26 +380,21 @@ export class CartApi extends BaseApi {
       },
     };
 
-    let requestBuilder = this.getApiForProject()
-      .shippingMethods()
-      .get(methodArgs);
+    let requestBuilder = this.getApiForProject().shippingMethods().get(methodArgs);
 
     if (onlyMatching) {
       methodArgs.queryArgs.country = locale.country;
-      requestBuilder = this.getApiForProject()
-        .shippingMethods()
-        .matchingLocation()
-        .get(methodArgs);
+      requestBuilder = this.getApiForProject().shippingMethods().matchingLocation().get(methodArgs);
     }
 
     return await requestBuilder
       .execute()
-      .then(response => {
-        return response.body.results.map(shippingMethod =>
+      .then((response) => {
+        return response.body.results.map((shippingMethod) =>
           CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale),
         );
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -417,12 +412,12 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
-        return response.body.results.map(shippingMethod =>
+      .then((response) => {
+        return response.body.results.map((shippingMethod) =>
           CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale),
         );
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -476,7 +471,7 @@ export class CartApi extends BaseApi {
 
   updatePayment: (cart: Cart, payment: Payment) => Promise<Payment> = async (cart: Cart, payment: Payment) => {
     const locale = await this.getCommercetoolsLocal();
-    const originalPayment = cart.payments.find(cartPayment => cartPayment.id === payment.id);
+    const originalPayment = cart.payments.find((cartPayment) => cartPayment.id === payment.id);
 
     if (originalPayment === undefined) {
       throw new CartPaymentNotFoundError({ message: `Payment ${payment.id} not found in cart ${cart.cartId}` });
@@ -522,10 +517,10 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return CartMapper.commercetoolsPaymentToPayment(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -594,10 +589,10 @@ export class CartApi extends BaseApi {
         body: cartUpdate,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return response.body;
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   }
@@ -708,10 +703,10 @@ export class CartApi extends BaseApi {
         body: cartDraft,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return response.body;
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
@@ -748,7 +743,7 @@ export class CartApi extends BaseApi {
         },
       })
       .execute()
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 

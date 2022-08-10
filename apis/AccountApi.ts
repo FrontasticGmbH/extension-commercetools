@@ -61,10 +61,10 @@ export class AccountApi extends BaseApi {
         body: customerDraft,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body.customer, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.code === 400) {
           if (error.body?.errors?.[0]?.code === 'DuplicateField') {
             throw new AccountEmailDuplicatedError({
@@ -120,10 +120,10 @@ export class AccountApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -151,10 +151,10 @@ export class AccountApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body.customer, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.code && error.code === 400) {
           if (error.body && error.body?.errors?.[0]?.code === 'InvalidCredentials') {
             throw new ExternalError({
@@ -212,10 +212,10 @@ export class AccountApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
@@ -233,14 +233,14 @@ export class AccountApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return {
           email: email,
           confirmationToken: response.body.value,
           tokenValidUntil: new Date(response.body.expiresAt),
         };
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -261,10 +261,10 @@ export class AccountApi extends BaseApi {
         },
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -466,10 +466,10 @@ export class AccountApi extends BaseApi {
         body: customerUpdate,
       })
       .execute()
-      .then(response => {
+      .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   }

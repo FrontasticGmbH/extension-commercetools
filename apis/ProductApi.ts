@@ -60,7 +60,7 @@ export class ProductApi extends BaseApi {
           },
         };
 
-        categoryId = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then(response => {
+        categoryId = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then((response) => {
           return response.body.results[0].id;
         });
       }
@@ -69,7 +69,7 @@ export class ProductApi extends BaseApi {
     }
 
     if (productQuery.filters !== undefined) {
-      productQuery.filters.forEach(filter => {
+      productQuery.filters.forEach((filter) => {
         switch (filter.type) {
           case FilterTypes.TERM:
             filterQuery.push(`${filter.identifier}.key:"${(filter as TermFilter).terms.join('","')}"`);
@@ -84,8 +84,9 @@ export class ProductApi extends BaseApi {
               // The scopedPrice filter is a commercetools price filter of a product variant selected
               // base on the price scope. The scope used is currency and country.
               filterQuery.push(
-                `variants.scopedPrice.value.centAmount:range (${(filter as RangeFilter).min ??
-                  '*'} to ${(filter as RangeFilter).max ?? '*'})`,
+                `variants.scopedPrice.value.centAmount:range (${(filter as RangeFilter).min ?? '*'} to ${
+                  (filter as RangeFilter).max ?? '*'
+                })`,
               );
             }
             break;
@@ -124,8 +125,8 @@ export class ProductApi extends BaseApi {
       .search()
       .get(methodArgs)
       .execute()
-      .then(response => {
-        const items = response.body.results.map(product =>
+      .then((response) => {
+        const items = response.body.results.map((product) =>
           ProductMapper.commercetoolsProductProjectionToProduct(
             product,
             this.productIdField,
@@ -146,7 +147,7 @@ export class ProductApi extends BaseApi {
 
         return result;
       })
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   };
@@ -164,7 +165,7 @@ export class ProductApi extends BaseApi {
       .productTypes()
       .get()
       .execute()
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
@@ -174,8 +175,8 @@ export class ProductApi extends BaseApi {
       field: 'categoryId',
       type: FilterFieldTypes.ENUM,
       label: 'Category ID',
-      values: await this.queryCategories({ limit: 250 }).then(result => {
-        return (result.items as Category[]).map(item => {
+      values: await this.queryCategories({ limit: 250 }).then((result) => {
+        return (result.items as Category[]).map((item) => {
           return {
             value: item.categoryId,
             name: item.name,
@@ -207,8 +208,8 @@ export class ProductApi extends BaseApi {
       },
     };
 
-    return await this.getCommercetoolsCategoryPagedQueryResponse(methodArgs).then(response => {
-      const items = response.body.results.map(category =>
+    return await this.getCommercetoolsCategoryPagedQueryResponse(methodArgs).then((response) => {
+      const items = response.body.results.map((category) =>
         ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
       );
 
@@ -239,7 +240,7 @@ export class ProductApi extends BaseApi {
       .categories()
       .get(methodArgs)
       .execute()
-      .catch(error => {
+      .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
   }

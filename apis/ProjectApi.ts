@@ -3,7 +3,7 @@ import { ProjectSettings } from '../../../types/ProjectSettings';
 
 export class ProjectApi extends BaseApi {
   getProjectSettings: () => Promise<ProjectSettings> = async () => {
-    return await this.getProject().then(response => {
+    return await this.getProject().then((response) => {
       const projectSettings: ProjectSettings = {
         name: response.name,
         countries: response.countries,
