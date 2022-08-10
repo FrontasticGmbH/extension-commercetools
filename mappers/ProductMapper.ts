@@ -159,7 +159,6 @@ export class ProductMapper {
     categoryIdField: string,
     locale: Locale,
   ) => Category = (commercetoolsCategory: CommercetoolsCategory, categoryIdField: string, locale: Locale) => {
-    console.debug('commercetoolsCategory:: ', commercetoolsCategory);
     return {
       categoryId: commercetoolsCategory?.[categoryIdField],
       name: commercetoolsCategory.name?.[locale.language] ?? undefined,
