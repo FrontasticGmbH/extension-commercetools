@@ -214,6 +214,7 @@ export class ProductMapper {
     }
 
     if (commercetoolsVariant?.prices) {      
+      //Filter price by country and currency and if we don't find one, then filter only by currency
       let commercetoolsPrice: CommercetoolsPrice = commercetoolsVariant?.prices.find((price: CommercetoolsPrice) => {
         return !price.hasOwnProperty('channel') && !price.hasOwnProperty('customerGroup') && price.country === locale.country && price.value.currencyCode === locale.currency;
       });
