@@ -48,7 +48,24 @@ export class ProductApi extends BaseApi {
     }
 
     if (productQuery.category !== undefined && productQuery.category !== '') {
-      filterQuery.push(`categories.id:subtree("${productQuery.category}")`);
+      let categoryId = productQuery.category;
+
+      // commercetools only allows filter categories by id. If we are using something different as categoryIdField,
+      // we need first to fetch the category to get the correspondent category id.
+      if (this.categoryIdField !== 'id') {
+        const categoriesMethodArgs = {
+          queryArgs: {
+            limit: 1,
+            where: [`key="${categoryId}"`],
+          },
+        };
+
+        categoryId = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then(response => {
+          return response.body.results[0].id;
+        });
+      }
+
+      filterQuery.push(`categories.id:subtree("${categoryId}")`);
     }
 
     if (productQuery.filters !== undefined) {
@@ -190,29 +207,22 @@ export class ProductApi extends BaseApi {
       },
     };
 
-    return await this.getApiForProject()
-      .categories()
-      .get(methodArgs)
-      .execute()
-      .then(response => {
-        const items = response.body.results.map(category =>
-          ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
-        );
+    return await this.getCommercetoolsCategoryPagedQueryResponse(methodArgs).then(response => {
+      const items = response.body.results.map(category =>
+        ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
+      );
 
-        const result: Result = {
-          total: response.body.total,
-          items: items,
-          count: response.body.count,
-          previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
-          nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
-          query: categoryQuery,
-        };
+      const result: Result = {
+        total: response.body.total,
+        items: items,
+        count: response.body.count,
+        previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
+        nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
+        query: categoryQuery,
+      };
 
-        return result;
-      })
-      .catch(error => {
-        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
-      });
+      return result;
+    });
   };
 
   protected getOffsetFromCursor = (cursor: string) => {
@@ -223,4 +233,14 @@ export class ProductApi extends BaseApi {
     const offsetMach = cursor.match(/(?<=offset:).+/);
     return offsetMach !== null ? +Object.values(offsetMach)[0] : undefined;
   };
+
+  protected async getCommercetoolsCategoryPagedQueryResponse(methodArgs: object) {
+    return await this.getApiForProject()
+      .categories()
+      .get(methodArgs)
+      .execute()
+      .catch(error => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
+  }
 }
