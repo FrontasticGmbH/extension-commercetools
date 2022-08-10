@@ -189,41 +189,50 @@ export class ProductMapper {
 
     if (commercetoolsVariant?.scopedPrice) {
       price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.scopedPrice?.value);
-      if (commercetoolsVariant.scopedPrice?.discounted?.value)
+      if (commercetoolsVariant.scopedPrice?.discounted?.value) {
         discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.scopedPrice?.discounted?.value);
-      if (commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description?.[locale.language])
+      }
+
+      if (commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description?.[locale.language]) {
         discounts = [commercetoolsVariant.scopedPrice?.discounted?.discount?.obj?.description[locale.language]];
+      }
 
       return { price, discountedPrice, discounts };
     }
 
     if (commercetoolsVariant?.price) {
       price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.price?.value);
-      if (commercetoolsVariant.price?.discounted?.value)
+      if (commercetoolsVariant.price?.discounted?.value) {
         discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsVariant.price?.discounted?.value);
-      if (commercetoolsVariant.price?.discounted?.discount?.obj?.description?.[locale.language])
+      }
+
+      if (commercetoolsVariant.price?.discounted?.discount?.obj?.description?.[locale.language]) {
         discounts = [commercetoolsVariant.price?.discounted?.discount?.obj?.description[locale.language]];
+      }
 
       return { price, discountedPrice, discounts };
     }
 
     if (commercetoolsVariant?.prices) {      
-      let commercetoolsPrice: CommercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
-        return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && p.country === locale.country && p.value.currencyCode === locale.currency;
+      let commercetoolsPrice: CommercetoolsPrice = commercetoolsVariant?.prices.find((price: CommercetoolsPrice) => {
+        return !price.hasOwnProperty('channel') && !price.hasOwnProperty('customerGroup') && price.country === locale.country && price.value.currencyCode === locale.currency;
       });
 
       if (!commercetoolsPrice) {
-        commercetoolsPrice = commercetoolsVariant?.prices.find((p: CommercetoolsPrice) => {
-          return !p.hasOwnProperty('channel') && !p.hasOwnProperty('customerGroup') && !p.hasOwnProperty('country') && p.value.currencyCode === locale.currency;
-        })
+        commercetoolsPrice = commercetoolsVariant?.prices.find((price: CommercetoolsPrice) => {
+          return !price.hasOwnProperty('channel') && !price.hasOwnProperty('customerGroup') && !price.hasOwnProperty('country') && price.value.currencyCode === locale.currency;
+        });
       }
 
       price = ProductMapper.commercetoolsMoneyToMoney(commercetoolsPrice?.value);
 
-      if (commercetoolsPrice?.discounted?.value)
+      if (commercetoolsPrice?.discounted?.value) {
         discountedPrice = ProductMapper.commercetoolsMoneyToMoney(commercetoolsPrice?.discounted?.value);
-      if (commercetoolsPrice?.discounted?.discount?.obj?.description?.[locale.language])
+      }
+
+      if (commercetoolsPrice?.discounted?.discount?.obj?.description?.[locale.language]) {
         discounts = [commercetoolsPrice?.discounted?.discount?.obj?.description[locale.language]];
+      }
 
       return { price, discountedPrice, discounts };
     }
