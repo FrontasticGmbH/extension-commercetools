@@ -164,7 +164,7 @@ export class ProductMapper {
       name: commercetoolsCategory.name?.[locale.language] ?? undefined,
       slug: commercetoolsCategory.slug?.[locale.language] ?? undefined,
       depth: commercetoolsCategory.ancestors.length,
-      path:
+      _url:
         commercetoolsCategory.ancestors.length > 0
           ? `/${commercetoolsCategory.ancestors
               .map((ancestor) => {
