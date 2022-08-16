@@ -131,7 +131,7 @@ export class CartMapper {
       orderState: commercetoolsOrder.orderState,
       orderId: commercetoolsOrder.orderNumber,
       orderVersion: commercetoolsOrder.version.toString(),
-      // createdAt:
+      createdAt: new Date(commercetoolsOrder.createdAt),
       lineItems: CartMapper.commercetoolsLineItemsToLineItems(commercetoolsOrder.lineItems, locale),
       email: commercetoolsOrder?.customerEmail,
       shippingAddress: CartMapper.commercetoolsAddressToAddress(commercetoolsOrder.shippingAddress),
