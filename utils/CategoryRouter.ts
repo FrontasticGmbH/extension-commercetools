@@ -8,7 +8,7 @@ import { ProductQueryFactory } from './ProductQueryFactory';
 
 export class CategoryRouter {
   static identifyFrom(request: Request) {
-    if (getPath(request)?.match(/.+/)) {
+    if (getPath(request)?.match(/[^/]+(?=\/$|$)/)) {
       return true;
     }
 
@@ -17,7 +17,9 @@ export class CategoryRouter {
 
   static loadFor = async (request: Request, frontasticContext: Context): Promise<Result> => {
     const productApi = new ProductApi(frontasticContext, getLocale(request));
-    const urlMatches = getPath(request)?.match(/[^\/]+/);
+
+    // We are using the last subdirectory of the path to identify the category slug
+    const urlMatches = getPath(request)?.match(/[^/]+(?=\/$|$)/);
 
     if (urlMatches) {
       const categoryQuery: CategoryQuery = {
@@ -26,7 +28,10 @@ export class CategoryRouter {
 
       const categoryQueryResult = await productApi.queryCategories(categoryQuery);
 
-      if (categoryQueryResult.items.length == 0) return null;
+      if (categoryQueryResult.items.length == 0) {
+        return null;
+      }
+
       request.query.category = (categoryQueryResult.items[0] as Category).categoryId;
 
       const productQuery = ProductQueryFactory.queryFromParams({

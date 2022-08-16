@@ -67,9 +67,7 @@ export default {
           return {
             dynamicPageType: 'frontastic/search',
             dataSourcePayload: result,
-            pageMatchingPayload: {
-              query: result.query,
-            },
+            pageMatchingPayload: result,
           };
         }
 
@@ -83,22 +81,8 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/category',
-            dataSourcePayload: {
-              total: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-              category: getPath(request),
-            },
-            pageMatchingPayload: {
-              total: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-              category: getPath(request),
-            },
+            dataSourcePayload: result,
+            pageMatchingPayload: result,
           };
         }
 
