@@ -11,11 +11,7 @@ import { getLocale } from '../utils/Request';
 import { Discount } from '../../../types/cart/Discount';
 import { EmailApi } from '../apis/EmailApi';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
-
-type ControllerResponse = Response & {
-  error?: string;
-  errorCode?: number;
-};
+import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -336,33 +332,40 @@ export const updatePayment: ActionHook = async (request: Request, actionContext:
 
 export const redeemDiscount: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  let cart = await CartFetcher.fetchCart(request, actionContext);
 
   const body: {
     code?: string;
   } = JSON.parse(request.body);
 
-  const result = await cartApi.redeemDiscountCode(cart, body.code);
+  let response: Response;
 
-  let response: ControllerResponse;
+  try {
+    cart = await cartApi.redeemDiscountCode(cart, body.code);
 
-  if (result.data) {
     response = {
       statusCode: 200,
-      body: JSON.stringify(result.data),
+      body: JSON.stringify(cart),
       sessionData: {
         ...request.sessionData,
-        cartId: result.data.cartId,
+        cartId: cart.cartId,
       },
     };
-  }
+  } catch (error) {
+    if (error instanceof CartRedeemDiscountCodeError) {
+      response = {
+        statusCode: error.status,
+        body: JSON.stringify(error.message),
+        sessionData: {
+          ...request.sessionData,
+          cartId: cart.cartId,
+        },
+      };
 
-  if (result.error) {
-    response = {
-      statusCode: result.statusCode,
-      errorCode: 101,
-      error: result.error,
-    };
+      return response;
+    }
+
+    throw error;
   }
 
   return response;

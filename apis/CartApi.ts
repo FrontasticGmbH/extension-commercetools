@@ -35,10 +35,10 @@ import {
 import { Account } from '../../../types/account/Account';
 import { isReadyForCheckout } from '../utils/Cart';
 import { Discount } from '../../../types/cart/Discount';
-import { ActionResult } from '@Types/result/ActionResult';
 import { ExternalError } from '../utils/Errors';
 import { CartNotCompleteError } from '../errors/CartNotCompleteError';
 import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
+import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 
 export class CartApi extends BaseApi {
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
@@ -525,30 +525,32 @@ export class CartApi extends BaseApi {
       });
   };
 
-  redeemDiscountCode: (cart: Cart, code: string) => Promise<ActionResult<Cart>> = async (cart: Cart, code: string) => {
-    try {
-      const locale = await this.getCommercetoolsLocal();
+  redeemDiscountCode: (cart: Cart, code: string) => Promise<Cart> = async (cart: Cart, code: string) => {
+    const locale = await this.getCommercetoolsLocal();
 
-      const cartUpdate: CartUpdate = {
-        version: +cart.cartVersion,
-        actions: [
-          {
-            action: 'addDiscountCode',
-            code: code,
-          } as CartAddDiscountCodeAction,
-        ],
-      };
+    const cartUpdate: CartUpdate = {
+      version: +cart.cartVersion,
+      actions: [
+        {
+          action: 'addDiscountCode',
+          code: code,
+        } as CartAddDiscountCodeAction,
+      ],
+    };
 
-      const commercetoolsCart = await this.updateCart(cart.cartId, cartUpdate, locale);
-      const data = await this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
+    const commercetoolsCart = await this.updateCart(cart.cartId, cartUpdate, locale).catch((error) => {
+      if (error instanceof ExternalError) {
+        throw new CartRedeemDiscountCodeError({
+          errorCode: error.body['errors'][0].code,
+          message: `Redeem discount code '${code}' failed. ${error.message}`,
+          status: error.status,
+        });
+      }
 
-      return { statusCode: 200, data };
-    } catch (error) {
-      return {
-        statusCode: (error as any).statusCode,
-        error: (error as any).message,
-      };
-    }
+      throw error;
+    });
+
+    return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
   };
 
   removeDiscountCode: (cart: Cart, discount: Discount) => Promise<Cart> = async (cart: Cart, discount: Discount) => {
