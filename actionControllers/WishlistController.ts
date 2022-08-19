@@ -25,7 +25,11 @@ function fetchAccountFromSessionEnsureLoggedIn(request: Request): Account {
 
 async function fetchWishlist(request: Request, wishlistApi: WishlistApi) {
   if (request.sessionData?.wishlistId !== undefined) {
-    return await wishlistApi.getById(request.sessionData?.wishlistId);
+    try {
+      return await wishlistApi.getById(request.sessionData.wishlistId);
+    } catch (error) {
+      console.info(`Error fetching the wishlist ${request.sessionData.wishlistId}, creating a new one. ${error}`);
+    }
   }
 
   const account = fetchAccountFromSession(request);
