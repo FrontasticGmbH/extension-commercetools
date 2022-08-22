@@ -305,7 +305,7 @@ export const requestReset: ActionHook = async (request: Request, actionContext: 
 
   const passwordResetToken = await accountApi.generatePasswordResetToken(accountRequestResetBody.email);
 
-  await emailApi.sendPasswordResetEmail(passwordResetToken.confirmationToken, accountRequestResetBody.email);
+  await emailApi.sendPasswordResetEmail(passwordResetToken.token, accountRequestResetBody.email);
 
   return {
     statusCode: 200,

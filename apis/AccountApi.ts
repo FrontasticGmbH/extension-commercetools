@@ -11,10 +11,9 @@ import { Cart } from '../../../types/cart/Cart';
 import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
 import { Address } from '../../../types/account/Address';
 import { Guid } from '../utils/Guid';
-import { PasswordResetToken } from '../../../types/account/PasswordResetToken';
 import { ExternalError, ValidationError } from '../utils/Errors';
 import { AccountEmailDuplicatedError } from '../errors/AccountEmailDuplicatedError';
-import { AccountToken } from '@Types/account/AccountToken';
+import { AccountToken } from '../../../types/account/AccountToken';
 
 export class AccountApi extends BaseApi {
   create: (account: Account, cart: Cart | undefined) => Promise<Account> = async (
@@ -160,23 +159,6 @@ export class AccountApi extends BaseApi {
       account.confirmationToken = await this.getConfirmationToken(account);
     }
 
-    // if (reverify) {
-    //   const token = await this.generateCustomerToken(account);
-    //   account.confirmationToken = token.value;
-    //   account.tokenValidUntil = new Date(token.expiresAt);
-    // } else if (!account.confirmed) {
-    //   throw new ValidationError({
-    //     message: `Your account ${account.email} is not activated yet!`,
-    //   });
-    // }
-
-    // if (!account.confirmed) {
-    //   throw new AccountEmailNotActiveError({
-    //     status: 401,
-    //     message: `Your email address "${account.email}" was not yet verified.`,
-    //   });
-    // }
-
     return account;
   };
 
@@ -211,7 +193,7 @@ export class AccountApi extends BaseApi {
     return account;
   };
 
-  generatePasswordResetToken: (email: string) => Promise<PasswordResetToken> = async (email: string) => {
+  generatePasswordResetToken: (email: string) => Promise<AccountToken> = async (email: string) => {
     return await this.getApiForProject()
       .customers()
       .passwordToken()
@@ -225,7 +207,7 @@ export class AccountApi extends BaseApi {
       .then((response) => {
         return {
           email: email,
-          confirmationToken: response.body.value,
+          token: response.body.value,
           tokenValidUntil: new Date(response.body.expiresAt),
         };
       })
