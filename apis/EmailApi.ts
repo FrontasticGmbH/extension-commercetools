@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer';
-import { Account } from '../../../types/account/Account';
+import { AccountToken } from '../../../types/account/AccountToken';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { Context, Project } from '@frontastic/extension-types';
 import { SmtpConfig } from '../interfaces/SmtpConfig';
@@ -35,13 +35,13 @@ export class EmailApi {
     return await this.transport.sendMail({ from, to, subject, text, html });
   }
 
-  async sendVerificationEmail(account: Account) {
-    if (!account.confirmationToken) {
-      console.error(`No valid confirmation token for the account "${account.accountId}"`);
+  async sendAccountConfirmationEmail(accountConfirmationToken: AccountToken) {
+    if (!accountConfirmationToken.token) {
+      console.error('No valid confirmation token');
       return;
     }
 
-    const verificationUrl = this.getUrl(account.confirmationToken.token, 'verify');
+    const verificationUrl = this.getUrl(accountConfirmationToken.token, 'verify');
 
     const htmlVerificationMessage = `
       <h1>Thanks for your registration!</h1>
@@ -51,20 +51,20 @@ export class EmailApi {
 
     try {
       await this.sendEmail({
-        to: account.email,
+        to: accountConfirmationToken.email,
         subject: 'Account Verification',
         html: htmlVerificationMessage,
       });
     } catch (error) {}
   }
 
-  async sendPasswordResetEmail(token: string, email: string) {
-    if (!token) {
-      console.error(`No valid reset token`);
+  async sendPasswordResetEmail(passwordResetToken: AccountToken) {
+    if (!passwordResetToken.token) {
+      console.error('No valid reset token');
       return;
     }
 
-    const url = this.getUrl(token, 'reset-password');
+    const url = this.getUrl(passwordResetToken.token, 'reset-password');
     const htmlResetPasswordMessage = `
       <h1>You requested a password reset!</h1>
       <p style="margin-top: 10px;color:gray;">Please click the link below to proceed.</p>
@@ -72,7 +72,7 @@ export class EmailApi {
     `;
 
     await this.sendEmail({
-      to: email,
+      to: passwordResetToken.email,
       subject: 'Password Reset',
       html: htmlResetPasswordMessage,
     });
