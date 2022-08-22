@@ -4,7 +4,6 @@ import {
   CustomerDraft,
   CustomerUpdate,
   CustomerUpdateAction,
-  CustomerToken,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/customer';
 import { AccountMapper } from '../mappers/AccontMapper';
 import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
@@ -15,6 +14,7 @@ import { Guid } from '../utils/Guid';
 import { PasswordResetToken } from '../../../types/account/PasswordResetToken';
 import { ExternalError, ValidationError } from '../utils/Errors';
 import { AccountEmailDuplicatedError } from '../errors/AccountEmailDuplicatedError';
+import { AccountToken } from '@Types/account/AccountToken';
 
 export class AccountApi extends BaseApi {
   create: (account: Account, cart: Cart | undefined) => Promise<Account> = async (
@@ -83,29 +83,11 @@ export class AccountApi extends BaseApi {
         throw error;
       });
 
-    const token = await this.generateToken(account);
-
-    if (token) {
-      account.confirmationToken = token.value;
-      account.tokenValidUntil = new Date(token.expiresAt);
+    if (!account.confirmed) {
+      account.confirmationToken = await this.getConfirmationToken(account);
     }
 
     return account;
-  };
-
-  generateToken: (account: Account) => Promise<CustomerToken> = async (account: Account) => {
-    const token = await this.getApiForProject()
-      .customers()
-      .emailToken()
-      .post({
-        body: {
-          id: account.accountId,
-          ttlMinutes: 2 * 7 * 24 * 60,
-        },
-      })
-      .execute();
-
-    return token.body;
   };
 
   confirmEmail: (token: string) => Promise<Account> = async (token: string) => {
@@ -128,10 +110,9 @@ export class AccountApi extends BaseApi {
       });
   };
 
-  login: (account: Account, cart: Cart | undefined, reverify?: boolean) => Promise<Account> = async (
+  login: (account: Account, cart: Cart | undefined) => Promise<Account> = async (
     account: Account,
     cart: Cart | undefined,
-    reverify = false,
   ) => {
     const locale = await this.getCommercetoolsLocal();
 
@@ -168,25 +149,33 @@ export class AccountApi extends BaseApi {
            * The cart might already belong to another user, so we try to log in without the cart.
            */
           if (cart) {
-            return this.login(account, undefined, reverify);
+            return this.login(account, undefined);
           }
         }
 
-        // throw new ExternalError({
-        //   errors: [{ message: error.message, code: error.code }],
-        // });
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
-    if (reverify) {
-      const token = await this.generateToken(account);
-      account.confirmationToken = token.value;
-      account.tokenValidUntil = new Date(token.expiresAt);
-    } else if (!account.confirmed) {
-      throw new ValidationError({
-        message: `Your account ${account.email} is not activated yet!`,
-      });
+    if (!account.confirmed) {
+      account.confirmationToken = await this.getConfirmationToken(account);
     }
+
+    // if (reverify) {
+    //   const token = await this.generateCustomerToken(account);
+    //   account.confirmationToken = token.value;
+    //   account.tokenValidUntil = new Date(token.expiresAt);
+    // } else if (!account.confirmed) {
+    //   throw new ValidationError({
+    //     message: `Your account ${account.email} is not activated yet!`,
+    //   });
+    // }
+
+    // if (!account.confirmed) {
+    //   throw new AccountEmailNotActiveError({
+    //     status: 401,
+    //     message: `Your email address "${account.email}" was not yet verified.`,
+    //   });
+    // }
 
     return account;
   };
@@ -468,6 +457,35 @@ export class AccountApi extends BaseApi {
       .execute()
       .then((response) => {
         return AccountMapper.commercetoolsCustomerToAccount(response.body, locale);
+      })
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
+  }
+
+  protected async getConfirmationToken(account: Account): Promise<AccountToken> {
+    if (!account.accountId) {
+      // TODO: throw exception
+    }
+
+    return await this.getApiForProject()
+      .customers()
+      .emailToken()
+      .post({
+        body: {
+          id: account.accountId,
+          ttlMinutes: 2 * 7 * 24 * 60,
+        },
+      })
+      .execute()
+      .then((response) => {
+        const accountToken: AccountToken = {
+          email: account.email,
+          token: response.body.value,
+          tokenValidUntil: new Date(response.body.expiresAt),
+        };
+
+        return accountToken;
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });

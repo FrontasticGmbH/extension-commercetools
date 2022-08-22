@@ -41,7 +41,7 @@ export class EmailApi {
       return;
     }
 
-    const verificationUrl = this.getUrl(account.confirmationToken, 'verify');
+    const verificationUrl = this.getUrl(account.confirmationToken.token, 'verify');
 
     const htmlVerificationMessage = `
       <h1>Thanks for your registration!</h1>
