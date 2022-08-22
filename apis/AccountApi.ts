@@ -446,10 +446,6 @@ export class AccountApi extends BaseApi {
   }
 
   protected async getConfirmationToken(account: Account): Promise<AccountToken> {
-    if (!account.accountId) {
-      // TODO: throw exception
-    }
-
     return await this.getApiForProject()
       .customers()
       .emailToken()
