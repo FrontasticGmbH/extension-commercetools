@@ -176,8 +176,6 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
   return response;
 };
 
-// export const resendVerificationEmail: ActionHook = async (request: Request, actionContext: ActionContext) => {
-
 export const requestConfirmationEmail: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
 
