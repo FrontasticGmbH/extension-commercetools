@@ -38,7 +38,24 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
 
   const cart = await CartFetcher.fetchCart(request, actionContext);
 
-  account = await accountApi.login(account, cart);
+  try {
+    account = await accountApi.login(account, cart);
+  } catch (error) {
+    if (error instanceof AccountAuthenticationError) {
+      const response: Response = {
+        statusCode: 401,
+        body: JSON.stringify(error.message),
+        sessionData: {
+          ...request.sessionData,
+          account: account,
+        },
+      };
+
+      return response;
+    }
+
+    throw error;
+  }
 
   if (!account.confirmed) {
     // If needed, the account confirmation email can be requested using

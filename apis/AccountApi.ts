@@ -14,6 +14,7 @@ import { Guid } from '../utils/Guid';
 import { ExternalError, ValidationError } from '../utils/Errors';
 import { AccountEmailDuplicatedError } from '../errors/AccountEmailDuplicatedError';
 import { AccountToken } from '../../../types/account/AccountToken';
+import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 export class AccountApi extends BaseApi {
   create: (account: Account, cart: Cart | undefined) => Promise<Account> = async (
@@ -137,10 +138,8 @@ export class AccountApi extends BaseApi {
       .catch((error) => {
         if (error.code && error.code === 400) {
           if (error.body && error.body?.errors?.[0]?.code === 'InvalidCredentials') {
-            throw new ExternalError({
-              status: error.code,
-              message: `Invalid credentials to login with the account ${account.email}. ${error.message}`,
-              body: error.body,
+            throw new AccountAuthenticationError({
+              message: 'Failed to login account with the given credentials',
             });
           }
 
