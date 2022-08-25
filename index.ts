@@ -140,6 +140,12 @@ export default {
         };
       });
     },
+
+    'frontastic/empty': async (config: DataSourceConfiguration, context: DataSourceContext) => {
+      return {
+        dataSourcePayload: {},
+      };
+    },
   },
   actions: {
     account: AccountActions,
