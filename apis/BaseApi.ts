@@ -7,6 +7,8 @@ import { ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk/dist/dec
 import { LocaleError } from '../errors/LocaleError';
 import { ExternalError } from '../utils/Errors';
 
+const defaultCurrency = 'EUR';
+
 const localeRegex =
   /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
@@ -310,7 +312,7 @@ const parseLocale = (locale: string): ParsedLocale => {
     if (territory in territoryToCurrency) {
       currency = territoryToCurrency[territory];
     } else {
-      currency = 'EUR';
+      currency = defaultCurrency;
     }
   }
 
@@ -341,7 +343,7 @@ const pickCandidate = (candidates: string[], availableOptions: string[]): string
   return undefined;
 };
 
-const pickCommercetoolsLanguage = (parsedLocale: ParsedLocale, availableLanguages: string[]) => {
+const pickCommercetoolsLanguage = (parsedLocale: ParsedLocale, availableLanguages: string[]): string | undefined => {
   const candidates = [`${parsedLocale.language}-${parsedLocale.territory}`, parsedLocale.language];
 
   const foundCandidate = pickCandidate(candidates, availableLanguages);
@@ -355,10 +357,14 @@ const pickCommercetoolsLanguage = (parsedLocale: ParsedLocale, availableLanguage
     return foundPrefix;
   }
 
-  return availableLanguages[0];
+  return undefined;
 };
 
-const pickCommercetoolsCountry = (parsedLocale: ParsedLocale, language: string, availableCountries: string[]) => {
+const pickCommercetoolsCountry = (
+  parsedLocale: ParsedLocale,
+  language: string,
+  availableCountries: string[],
+): string | undefined => {
   const candidates = [parsedLocale.territory, parsedLocale.language, language];
 
   const foundCandidate = pickCandidate(candidates, availableCountries);
@@ -366,10 +372,10 @@ const pickCommercetoolsCountry = (parsedLocale: ParsedLocale, language: string, 
     return foundCandidate;
   }
 
-  return availableCountries[0];
+  return undefined;
 };
 
-const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrencies: string[]) => {
+const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrencies: string[]): string | undefined => {
   const candidates = [
     parsedLocale.currency,
     parseLocale(`${parsedLocale.language}_${parsedLocale.territory}`).currency,
@@ -380,7 +386,7 @@ const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrenci
     return foundCandidate;
   }
 
-  return availableCurrencies[0];
+  return undefined;
 };
 
 export abstract class BaseApi {
@@ -389,9 +395,11 @@ export abstract class BaseApi {
   protected productIdField: string;
   protected categoryIdField: string;
   protected locale: string;
+  protected defaultLocale: string;
 
   constructor(frontasticContext: Context, locale: string | null) {
-    this.locale = locale !== null ? locale : frontasticContext.project.defaultLocale;
+    this.defaultLocale = frontasticContext.project.defaultLocale;
+    this.locale = locale !== null ? locale : this.defaultLocale;
 
     const engine = 'commercetools';
     const clientSettings = getConfig(frontasticContext.project, engine, this.locale);
@@ -409,11 +417,28 @@ export abstract class BaseApi {
 
   protected async getCommercetoolsLocal(): Promise<Locale> {
     const parsedLocale = parseLocale(this.locale);
+    const parsedDefaultLocale = parseLocale(this.defaultLocale);
     const project = await this.getProject();
 
-    const language = pickCommercetoolsLanguage(parsedLocale, project.languages);
-    const country = pickCommercetoolsCountry(parsedLocale, language, project.countries);
-    const currency = pickCommercetoolsCurrency(parsedLocale, project.currencies);
+    /**
+     * Get a valid locale following the priority of:
+     *
+     * 1. From requested locale
+     * 2. From default locale
+     * 3. First from the list of available ones
+     */
+    const language =
+      pickCommercetoolsLanguage(parsedLocale, project.languages) ??
+      pickCommercetoolsLanguage(parsedDefaultLocale, project.languages) ??
+      project.languages[0];
+    const country =
+      pickCommercetoolsCountry(parsedLocale, language, project.countries) ??
+      pickCommercetoolsCountry(parsedDefaultLocale, language, project.countries) ??
+      project.countries[0];
+    const currency =
+      pickCommercetoolsCurrency(parsedLocale, project.currencies) ??
+      pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies) ??
+      project.currencies[0];
 
     return Promise.resolve({
       language,
