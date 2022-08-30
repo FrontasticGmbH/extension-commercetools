@@ -211,7 +211,6 @@ export const getOrders: ActionHook = async (request: Request, actionContext: Act
 
 export const getShippingMethods: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const cart = await CartFetcher.fetchCart(request, actionContext);
   const onlyMatching = request.query.onlyMatching === 'true';
 
   const shippingMethods = await cartApi.getShippingMethods(onlyMatching);
@@ -221,7 +220,6 @@ export const getShippingMethods: ActionHook = async (request: Request, actionCon
     body: JSON.stringify(shippingMethods),
     sessionData: {
       ...request.sessionData,
-      cartId: cart.cartId,
     },
   };
 
@@ -307,6 +305,31 @@ export const addPaymentByInvoice: ActionHook = async (request: Request, actionCo
 
   return response;
 };
+
+/*
+export const getPayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+
+  const id = 'fd9b52ff-204b-4986-b13d-b25f53ac3343';
+
+  const amount: any = {
+    centAmount: 1000,
+    currencyCode: 'EUR'
+  };
+
+  let payment = await cartApi.getPayment(id);
+
+  payment = await cartApi.updateOrderPayment(id, payment.body.version, PaymentStatuses.PENDING, 'Payment method', amount);
+
+  const response: Response = {
+    statusCode: 200,
+    body: JSON.stringify(payment),
+    sessionData: request.sessionData,
+  };
+
+  return response;
+}
+*/
 
 export const updatePayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));

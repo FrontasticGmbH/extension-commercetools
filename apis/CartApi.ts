@@ -9,6 +9,7 @@ import {
   CartSetShippingMethodAction,
 } from '@commercetools/platform-sdk';
 import { CartMapper } from '../mappers/CartMapper';
+import { Money } from '../../../types/product/Money';
 import { LineItem } from '../../../types/cart/LineItem';
 import { Cart as CommercetoolsCart } from '@commercetools/platform-sdk';
 import {
@@ -467,7 +468,7 @@ export class CartApi extends BaseApi {
     const commercetoolsCart = await this.updateCart(cart.cartId, cartUpdate, locale);
 
     return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
-  };
+  };  
 
   updatePayment: (cart: Cart, payment: Payment) => Promise<Payment> = async (cart: Cart, payment: Payment) => {
     const locale = await this.getCommercetoolsLocal();
@@ -523,6 +524,82 @@ export class CartApi extends BaseApi {
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
+  };
+
+  getPayment: (paymentId: string) => Promise<any> = async (paymentId) => {
+    return await this.getApiForProject()
+      .payments()
+      .withId({
+        ID: paymentId,
+      })
+      .get()
+      .execute()
+  };
+    
+  updateOrderPayment: (paymentId: string, paymentDraft: Payment) => Promise<any> = async (paymentId: string, paymentDraft: Payment) => {
+    const locale = await this.getCommercetoolsLocal();
+
+    const paymentUpdateActions: PaymentUpdateAction[] = [];
+    
+    /*if (paymentDraft.) {
+      paymentUpdateActions.push({
+        action: 'setMethodInfoName',
+        name: {
+          'en': 'adyen'
+        }
+      });
+    }*/
+
+    if (paymentDraft.paymentMethod) {
+      paymentUpdateActions.push({
+        action: 'setMethodInfoMethod',
+        method: paymentDraft.paymentMethod
+      });
+    }
+
+    if (paymentDraft.amountPlanned) {
+      paymentUpdateActions.push({
+        action: 'changeAmountPlanned',
+        amount: {
+          centAmount: paymentDraft.amountPlanned.centAmount,
+          currencyCode: paymentDraft.amountPlanned.currencyCode
+        }
+      });
+    }
+
+    /*
+    paymentUpdateActions.push({
+      action: 'setInterfaceId',
+      interfaceId: 'interface1547',
+    });
+    */
+
+    if (paymentDraft.paymentStatus) {
+      paymentUpdateActions.push({
+        action: 'setStatusInterfaceCode',
+        interfaceCode: paymentDraft.paymentStatus,
+      });
+    }
+
+    return await this.getApiForProject()
+      .payments()
+      .withId({
+        ID: paymentId,
+      })      
+      .post({
+        body: {
+          version: paymentDraft.version,
+          actions: paymentUpdateActions,
+        },
+      })
+      .execute()
+      .then((response) => {
+        return CartMapper.commercetoolsPaymentToPayment(response.body, locale);
+        //return response;
+      })
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });   
   };
 
   redeemDiscountCode: (cart: Cart, code: string) => Promise<Cart> = async (cart: Cart, code: string) => {
