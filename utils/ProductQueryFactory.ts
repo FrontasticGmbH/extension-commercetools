@@ -82,6 +82,22 @@ export class ProductQueryFactory {
     configFiltersData.push(...ProductQueryFactory.mergeProductFiltersAndValues(queryParams));
     configFiltersData.push(...ProductQueryFactory.mergeCategoryFiltersAndValues(queryParams));
 
+    /**
+     * Map price filter
+     */
+    if (queryParams.minPrice || queryParams.maxPrice) {
+      configFiltersData.push({
+        type: FilterFieldTypes.MONEY,
+        field: 'price',
+        values: [
+          {
+            min: queryParams?.minPrice,
+            max: queryParams?.maxPrice,
+          },
+        ],
+      });
+    }
+
     let key: any;
     let configFilterData: any;
 
@@ -95,11 +111,12 @@ export class ProductQueryFactory {
 
         switch (configFilterData.type) {
           case FilterFieldTypes.NUMBER:
+          case FilterFieldTypes.MONEY:
             const rangeFilter: RangeFilter = {
               identifier: configFilterData?.field,
               type: FilterTypes.RANGE,
-              min: +configFilterData?.min || undefined,
-              max: +configFilterData?.max || undefined,
+              min: +configFilterData?.values?.[0]?.min || +configFilterData?.values?.[0] || undefined,
+              max: +configFilterData?.values?.[0]?.max || +configFilterData?.values?.[0] || undefined,
             };
             filters.push(rangeFilter);
             break;

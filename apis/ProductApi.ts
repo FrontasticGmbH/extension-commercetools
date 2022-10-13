@@ -80,15 +80,13 @@ export class ProductApi extends BaseApi {
             );
             break;
           case FilterTypes.RANGE:
-            if (filter.identifier === 'price') {
-              // The scopedPrice filter is a commercetools price filter of a product variant selected
-              // base on the price scope. The scope used is currency and country.
-              filterQuery.push(
-                `variants.scopedPrice.value.centAmount:range (${(filter as RangeFilter).min ?? '*'} to ${
-                  (filter as RangeFilter).max ?? '*'
-                })`,
-              );
-            }
+            // The scopedPrice filter is a commercetools price filter of a product variant selected
+            // base on the price scope. The scope used is currency and country.
+            const filterId =
+              filter.identifier === 'price' ? `variants.scopedPrice.value.centAmount` : filter.identifier;
+            filterQuery.push(
+              `${filterId}:range (${(filter as RangeFilter).min ?? '*'} to ${(filter as RangeFilter).max ?? '*'})`,
+            );
             break;
         }
       });
@@ -171,6 +169,7 @@ export class ProductApi extends BaseApi {
 
     const filterFields = ProductMapper.commercetoolsProductTypesToFilterFields(response.body.results, locale);
 
+    // Category filter. Not included as commercetools product type.
     filterFields.push({
       field: 'categoryId',
       type: FilterFieldTypes.ENUM,
@@ -183,6 +182,20 @@ export class ProductApi extends BaseApi {
           };
         });
       }),
+    });
+
+    // Variants price filter. Not included as commercetools product type.
+    filterFields.push({
+      field: 'variants.price',
+      type: FilterFieldTypes.MONEY,
+      label: 'Variants price', // TODO: localize label
+    });
+
+    // Variants scoped price filter. Not included as commercetools product type.
+    filterFields.push({
+      field: 'variants.scopedPrice.value',
+      type: FilterFieldTypes.MONEY,
+      label: 'Variants scoped price', // TODO: localize label
     });
 
     return filterFields;

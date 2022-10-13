@@ -45,6 +45,7 @@ const TypeMap = new Map<string, string>([
   ['number', FilterFieldTypes.NUMBER],
   ['lenum', FilterFieldTypes.ENUM],
   ['ltext', FilterFieldTypes.TEXT],
+  ['money', FilterFieldTypes.MONEY],
 ]);
 
 export class ProductMapper {
