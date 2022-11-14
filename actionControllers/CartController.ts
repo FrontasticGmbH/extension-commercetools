@@ -9,7 +9,7 @@ import { Payment, PaymentStatuses } from '../../../types/cart/Payment';
 import { CartApi } from '../apis/CartApi';
 import { getLocale } from '../utils/Request';
 import { Discount } from '../../../types/cart/Discount';
-import { EmailApi } from '../apis/EmailApi';
+import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 
@@ -166,12 +166,15 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
 };
 
 export const checkout: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext);
+  const locale = getLocale(request);
 
-  let cart = await updateCartFromRequest(request, actionContext);
-  cart = await cartApi.order(cart);
-  await emailApi.sendPaymentConfirmationEmail(cart.email);
+  const cartApi = new CartApi(actionContext.frontasticContext, locale);
+  const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
+
+  const cart = await updateCartFromRequest(request, actionContext);
+  const order = await cartApi.order(cart);
+
+  emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
 
   // Unset the cartId
   const cartId: string = undefined;
