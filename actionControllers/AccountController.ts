@@ -5,7 +5,7 @@ import { Account } from '../../../types/account/Account';
 import { Address } from '../../../types/account/Address';
 import { CartFetcher } from '../utils/CartFetcher';
 import { getLocale } from '../utils/Request';
-import { EmailApi } from '../apis/EmailApi';
+import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
@@ -170,21 +170,24 @@ export const getAccount: ActionHook = async (request: Request, actionContext: Ac
 };
 
 export const register: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const locale = getLocale(request);
+
+  const accountApi = new AccountApi(actionContext.frontasticContext, locale);
   const accountData = mapRequestToAccount(request);
 
   const cart = await CartFetcher.fetchCart(request, actionContext);
 
   const account = await accountApi.create(accountData, cart);
 
-  if (!account.confirmed) {
-    const emailApi = new EmailApi(actionContext.frontasticContext);
-    await emailApi.sendAccountConfirmationEmail(account.confirmationToken);
-  }
+  const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
+
+  emailApi.sendWelcomeCustomerEmail(account);
+
+  emailApi.sendAccountVerificationEmail(account);
 
   const response: Response = {
     statusCode: 200,
-    body: JSON.stringify({ account: account }),
+    body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
     },
@@ -194,7 +197,9 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 };
 
 export const requestConfirmationEmail: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const locale = getLocale(request);
+
+  const accountApi = new AccountApi(actionContext.frontasticContext, locale);
 
   const accountLoginBody: AccountLoginBody = JSON.parse(request.body);
 
@@ -220,8 +225,8 @@ export const requestConfirmationEmail: ActionHook = async (request: Request, act
     return response;
   }
 
-  const emailApi = new EmailApi(actionContext.frontasticContext);
-  await emailApi.sendAccountConfirmationEmail(account.confirmationToken);
+  const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
+  emailApi.sendAccountVerificationEmail(account);
 
   const response: Response = {
     statusCode: 200,
@@ -311,18 +316,20 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
  * Request new reset token
  */
 export const requestReset: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const locale = getLocale(request);
+
   type AccountRequestResetBody = {
     email?: string;
   };
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
-  const emailApi = new EmailApi(actionContext.frontasticContext);
+  const accountApi = new AccountApi(actionContext.frontasticContext, locale);
+  const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
 
   const accountRequestResetBody: AccountRequestResetBody = JSON.parse(request.body);
 
   const passwordResetToken = await accountApi.generatePasswordResetToken(accountRequestResetBody.email);
 
-  await emailApi.sendPasswordResetEmail(passwordResetToken);
+  emailApi.sendPasswordResetEmail(accountRequestResetBody as Account, passwordResetToken.token);
 
   return {
     statusCode: 200,
