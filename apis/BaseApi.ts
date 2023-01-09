@@ -6,6 +6,10 @@ import { Locale } from '../Locale';
 import { ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk/dist/declarations/src/generated/client/by-project-key-request-builder';
 import { LocaleError } from '../errors/LocaleError';
 import { ExternalError } from '../utils/Errors';
+import * as console from 'console';
+import { TokenStore } from '@commercetools/sdk-client-v2';
+import { ClientConfig } from '../interfaces/ClientConfig';
+import { Token } from '@Types/Token';
 
 const defaultCurrency = 'EUR';
 
@@ -391,28 +395,85 @@ const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrenci
 
 export abstract class BaseApi {
   protected apiRoot: ApiRoot;
+  protected clientSettings: ClientConfig;
+  protected environment: string;
   protected projectKey: string;
   protected productIdField: string;
   protected categoryIdField: string;
   protected locale: string;
   protected defaultLocale: string;
+  public token: Token;
 
-  constructor(frontasticContext: Context, locale: string | null) {
+  constructor(frontasticContext: Context, locale: string | null, token?: Token | undefined) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
     this.locale = locale !== null ? locale : this.defaultLocale;
 
     const engine = 'commercetools';
-    const clientSettings = getConfig(frontasticContext.project, engine, this.locale);
-    const client = ClientFactory.factor(clientSettings, frontasticContext.environment);
+    this.clientSettings = getConfig(frontasticContext.project, engine, this.locale);
 
-    this.apiRoot = createApiBuilderFromCtpClient(client);
-    this.projectKey = clientSettings.projectKey;
-    this.productIdField = clientSettings?.productIdField || 'key';
-    this.categoryIdField = clientSettings?.categoryIdField || 'key';
+    this.environment = frontasticContext.environment;
+    this.projectKey = this.clientSettings.projectKey;
+    this.productIdField = this.clientSettings?.productIdField || 'key';
+    this.categoryIdField = this.clientSettings?.categoryIdField || 'key';
+    this.token = token;
   }
 
   protected getApiForProject(): ByProjectKeyRequestBuilder {
-    return this.apiRoot.withProjectKey({ projectKey: this.projectKey });
+    console.debug(':::: getApiForProject ::::');
+
+    return this.getApiRoot().withProjectKey({ projectKey: this.projectKey });
+  }
+
+  protected getApiRoot(): ApiRoot {
+    let expires: number;
+
+    console.debug('getApiRoot this.token:: ', this.token);
+
+    const tokenCache = (() => {
+      const get = () => {
+        console.debug('tokenCache get this.token ==> ', this.token);
+
+        if (this.token === undefined) {
+          return undefined;
+        }
+
+        const tokenStore: TokenStore = {
+          token: this.token.token,
+          expirationTime: this.token.expirationTime,
+          refreshToken: this.token.refreshToken,
+        };
+
+        return tokenStore;
+      };
+      const set = (cache: TokenStore) => {
+        expires = cache.expirationTime;
+
+        this.token = {
+          token: cache.token,
+          expirationTime: cache.expirationTime,
+          refreshToken: cache.refreshToken,
+        };
+        console.debug('tokenCache set TokenStore ==> ', cache);
+        console.debug('tokenCache set this.token ==> ', this.token);
+      };
+      return { get, set };
+    })();
+
+    let refreshToken: string | undefined;
+    if (this.apiRoot && Date.now() >= expires) {
+      this.apiRoot = undefined;
+      refreshToken = this.token?.refreshToken;
+    }
+
+    if (this.apiRoot) {
+      return this.apiRoot;
+    }
+
+    const client = ClientFactory.factor(this.clientSettings, this.environment, tokenCache, refreshToken);
+
+    this.apiRoot = createApiBuilderFromCtpClient(client);
+
+    return this.apiRoot;
   }
 
   protected async getCommercetoolsLocal(): Promise<Locale> {
