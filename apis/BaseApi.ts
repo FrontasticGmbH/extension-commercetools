@@ -6,10 +6,10 @@ import { Locale } from '../Locale';
 import { ByProjectKeyRequestBuilder } from '@commercetools/platform-sdk/dist/declarations/src/generated/client/by-project-key-request-builder';
 import { LocaleError } from '../errors/LocaleError';
 import { ExternalError } from '../utils/Errors';
-import * as console from 'console';
-import { TokenStore } from '@commercetools/sdk-client-v2';
+import { TokenCache, TokenStore } from '@commercetools/sdk-client-v2';
 import { ClientConfig } from '../interfaces/ClientConfig';
 import { Token } from '@Types/Token';
+import { tokenHasExpired } from '../utils/Token';
 
 const defaultCurrency = 'EUR';
 
@@ -402,6 +402,7 @@ export abstract class BaseApi {
   protected categoryIdField: string;
   protected locale: string;
   protected defaultLocale: string;
+  protected commercetoolsTokenCache: TokenCache;
   public token: Token;
 
   constructor(frontasticContext: Context, locale: string | null, token?: Token | undefined) {
@@ -415,24 +416,10 @@ export abstract class BaseApi {
     this.projectKey = this.clientSettings.projectKey;
     this.productIdField = this.clientSettings?.productIdField || 'key';
     this.categoryIdField = this.clientSettings?.categoryIdField || 'key';
+
     this.token = token;
-  }
-
-  protected getApiForProject(): ByProjectKeyRequestBuilder {
-    console.debug(':::: getApiForProject ::::');
-
-    return this.getApiRoot().withProjectKey({ projectKey: this.projectKey });
-  }
-
-  protected getApiRoot(): ApiRoot {
-    let expires: number;
-
-    console.debug('getApiRoot this.token:: ', this.token);
-
-    const tokenCache = (() => {
+    this.commercetoolsTokenCache = (() => {
       const get = () => {
-        console.debug('tokenCache get this.token ==> ', this.token);
-
         if (this.token === undefined) {
           return undefined;
         }
@@ -445,22 +432,26 @@ export abstract class BaseApi {
 
         return tokenStore;
       };
-      const set = (cache: TokenStore) => {
-        expires = cache.expirationTime;
 
+      const set = (tokenStore: TokenStore) => {
         this.token = {
-          token: cache.token,
-          expirationTime: cache.expirationTime,
-          refreshToken: cache.refreshToken,
+          token: tokenStore.token,
+          expirationTime: tokenStore.expirationTime,
+          refreshToken: tokenStore.refreshToken,
         };
-        console.debug('tokenCache set TokenStore ==> ', cache);
-        console.debug('tokenCache set this.token ==> ', this.token);
       };
+
       return { get, set };
     })();
+  }
 
+  protected getApiForProject(): ByProjectKeyRequestBuilder {
+    return this.getApiRoot().withProjectKey({ projectKey: this.projectKey });
+  }
+
+  protected getApiRoot(): ApiRoot {
     let refreshToken: string | undefined;
-    if (this.apiRoot && Date.now() >= expires) {
+    if (this.apiRoot && tokenHasExpired(this.token)) {
       this.apiRoot = undefined;
       refreshToken = this.token?.refreshToken;
     }
@@ -469,7 +460,12 @@ export abstract class BaseApi {
       return this.apiRoot;
     }
 
-    const client = ClientFactory.factor(this.clientSettings, this.environment, tokenCache, refreshToken);
+    const client = ClientFactory.factor(
+      this.clientSettings,
+      this.environment,
+      this.commercetoolsTokenCache,
+      refreshToken,
+    );
 
     this.apiRoot = createApiBuilderFromCtpClient(client);
 
@@ -518,16 +514,23 @@ export abstract class BaseApi {
       }
     }
 
-    const response = await this.getApiForProject().productTypes().get().execute();
+    return await this.getApiForProject()
+      .productTypes()
+      .get()
+      .execute()
+      .then((response) => {
+        const productTypes = response.body.results;
 
-    const productTypes = response.body.results;
+        productTypesCache[this.projectKey] = {
+          productTypes,
+          expiryTime: new Date(now.getMilliseconds() + projectCacheTtlMilliseconds),
+        };
 
-    productTypesCache[this.projectKey] = {
-      productTypes,
-      expiryTime: new Date(now.getMilliseconds() + projectCacheTtlMilliseconds),
-    };
-
-    return productTypes;
+        return productTypes;
+      })
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
   }
 
   protected async getProject() {

@@ -1,5 +1,4 @@
 import { Request } from '@frontastic/extension-types';
-import { Token } from '@Types/Token';
 
 export const getPath = (request: Request): string | null => {
   return getHeader(request, 'frontastic-path') ?? request.query.path;
@@ -15,16 +14,6 @@ export const getLocale = (request: Request): string | null => {
   }
 
   return null;
-};
-
-export const getToken = (request: Request): Token | undefined => {
-  if (request !== undefined) {
-    const token: Token | undefined = request.sessionData?.token ?? undefined;
-
-    return token;
-  }
-
-  return undefined;
 };
 
 const getHeader = (request: Request, header: string): string | null => {

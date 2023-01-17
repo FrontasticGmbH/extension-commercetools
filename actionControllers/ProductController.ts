@@ -4,7 +4,8 @@ import { ActionContext } from '@frontastic/extension-types';
 import { ProductQueryFactory } from '../utils/ProductQueryFactory';
 import { ProductQuery } from '../../../types/query/ProductQuery';
 import { CategoryQuery } from '../../../types/query/CategoryQuery';
-import { getLocale, getToken } from '../utils/Request';
+import { getLocale } from '../utils/Request';
+import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -45,8 +46,6 @@ export const query: ActionHook = async (request: Request, actionContext: ActionC
   const productQuery = ProductQueryFactory.queryFromParams(request);
 
   const queryResult = await productApi.query(productQuery);
-
-  console.debug('token before response::: ', productApi.token);
 
   const response: Response = {
     statusCode: 200,
