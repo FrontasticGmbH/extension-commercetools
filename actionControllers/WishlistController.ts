@@ -4,11 +4,12 @@ import { Guid } from '../utils/Guid';
 import { Account } from '../../../types/account/Account';
 import { getLocale } from '../utils/Request';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
+import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getWishlistApi(request: Request, actionContext: ActionContext) {
-  return new WishlistApi(actionContext.frontasticContext, getLocale(request));
+  return new WishlistApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 }
 
 function fetchAccountFromSession(request: Request): Account | undefined {
@@ -59,6 +60,7 @@ export const getWishlist: ActionHook = async (request, actionContext) => {
     body: JSON.stringify(wishlist),
     sessionData: {
       ...request.sessionData,
+      token: wishlistApi.token,
       wishlistId: wishlist.wishlistId,
     },
   };
@@ -80,6 +82,7 @@ export const createWishlist: ActionHook = async (request, actionContext) => {
     body: JSON.stringify(wishlist),
     sessionData: {
       ...request.sessionData,
+      token: wishlistApi.token,
       wishlistId: wishlist.wishlistId,
     },
   };
@@ -124,6 +127,7 @@ export const removeLineItem: ActionHook = async (request, actionContext) => {
     body: JSON.stringify(updatedWishlist),
     sessionData: {
       ...request.sessionData,
+      token: wishlistApi.token,
       wishlistId: updatedWishlist.wishlistId,
     },
   };
@@ -149,6 +153,7 @@ export const updateLineItemCount: ActionHook = async (request, actionContext) =>
     body: JSON.stringify(updatedWishlist),
     sessionData: {
       ...request.sessionData,
+      token: wishlistApi.token,
       wishlistId: updatedWishlist.wishlistId,
     },
   };

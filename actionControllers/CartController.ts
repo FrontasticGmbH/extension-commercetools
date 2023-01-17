@@ -12,12 +12,16 @@ import { Discount } from '../../../types/cart/Discount';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
+import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
-async function updateCartFromRequest(request: Request, actionContext: ActionContext): Promise<Cart> {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+function getCartApi(request: Request, actionContext: ActionContext) {
+  return new CartApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+}
+
+async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   if (request?.body === undefined || request?.body === '') {
     return cart;
@@ -45,7 +49,8 @@ async function updateCartFromRequest(request: Request, actionContext: ActionCont
 }
 
 export const getCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
   const cartId = cart.cartId;
 
   const response: Response = {
@@ -53,6 +58,7 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -61,7 +67,7 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
 };
 
 export const addToCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+  const cartApi = getCartApi(request, actionContext);
 
   const body: {
     variant?: { sku?: string; count: number };
@@ -75,7 +81,7 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
     count: +body.variant?.count || 1,
   };
 
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
   cart = await cartApi.addToCart(cart, lineItem);
 
   const cartId = cart.cartId;
@@ -85,6 +91,7 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -93,7 +100,7 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
 };
 
 export const updateLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+  const cartApi = getCartApi(request, actionContext);
 
   const body: {
     lineItem?: { id?: string; count: number };
@@ -104,7 +111,7 @@ export const updateLineItem: ActionHook = async (request: Request, actionContext
     count: +body.lineItem?.count || 1,
   };
 
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
   cart = await cartApi.updateLineItem(cart, lineItem);
 
   const cartId = cart.cartId;
@@ -114,6 +121,7 @@ export const updateLineItem: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -122,7 +130,7 @@ export const updateLineItem: ActionHook = async (request: Request, actionContext
 };
 
 export const removeLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+  const cartApi = getCartApi(request, actionContext);
 
   const body: {
     lineItem?: { id?: string };
@@ -132,7 +140,7 @@ export const removeLineItem: ActionHook = async (request: Request, actionContext
     lineItemId: body.lineItem?.id,
   };
 
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
   cart = await cartApi.removeLineItem(cart, lineItem);
 
   const cartId = cart.cartId;
@@ -142,6 +150,7 @@ export const removeLineItem: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -150,7 +159,9 @@ export const removeLineItem: ActionHook = async (request: Request, actionContext
 };
 
 export const updateCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cart = await updateCartFromRequest(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+
+  const cart = await updateCartFromRequest(cartApi, request, actionContext);
   const cartId = cart.cartId;
 
   const response: Response = {
@@ -158,6 +169,7 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -168,10 +180,10 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
 export const checkout: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const locale = getLocale(request);
 
-  const cartApi = new CartApi(actionContext.frontasticContext, locale);
+  const cartApi = getCartApi(request, actionContext);
   const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
 
-  const cart = await updateCartFromRequest(request, actionContext);
+  const cart = await updateCartFromRequest(cartApi, request, actionContext);
   const order = await cartApi.order(cart);
 
   emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
@@ -184,6 +196,7 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId,
     },
   };
@@ -192,7 +205,7 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
 };
 
 export const getOrders: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+  const cartApi = getCartApi(request, actionContext);
 
   const account = request.sessionData?.account !== undefined ? request.sessionData.account : undefined;
 
@@ -207,13 +220,14 @@ export const getOrders: ActionHook = async (request: Request, actionContext: Act
     body: JSON.stringify(orders),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
     },
   };
   return response;
 };
 
 export const getShippingMethods: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
+  const cartApi = getCartApi(request, actionContext);
   const onlyMatching = request.query.onlyMatching === 'true';
 
   const shippingMethods = await cartApi.getShippingMethods(onlyMatching);
@@ -223,6 +237,7 @@ export const getShippingMethods: ActionHook = async (request: Request, actionCon
     body: JSON.stringify(shippingMethods),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
     },
   };
 
@@ -230,8 +245,8 @@ export const getShippingMethods: ActionHook = async (request: Request, actionCon
 };
 
 export const getAvailableShippingMethods: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const availableShippingMethods = await cartApi.getAvailableShippingMethods(cart);
 
@@ -240,6 +255,7 @@ export const getAvailableShippingMethods: ActionHook = async (request: Request, 
     body: JSON.stringify(availableShippingMethods),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -248,8 +264,8 @@ export const getAvailableShippingMethods: ActionHook = async (request: Request, 
 };
 
 export const setShippingMethod: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const body: {
     shippingMethod?: { id?: string };
@@ -266,6 +282,7 @@ export const setShippingMethod: ActionHook = async (request: Request, actionCont
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -274,8 +291,8 @@ export const setShippingMethod: ActionHook = async (request: Request, actionCont
 };
 
 export const addPaymentByInvoice: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const body: {
     payment?: Payment;
@@ -302,6 +319,7 @@ export const addPaymentByInvoice: ActionHook = async (request: Request, actionCo
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -335,8 +353,8 @@ export const getPayment: ActionHook = async (request: Request, actionContext: Ac
 */
 
 export const updatePayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const body: {
     payment?: Payment;
@@ -349,6 +367,7 @@ export const updatePayment: ActionHook = async (request: Request, actionContext:
     body: JSON.stringify(payment),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -357,8 +376,8 @@ export const updatePayment: ActionHook = async (request: Request, actionContext:
 };
 
 export const redeemDiscount: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const body: {
     code?: string;
@@ -374,6 +393,7 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
       body: JSON.stringify(cart),
       sessionData: {
         ...request.sessionData,
+        token: cartApi.token,
         cartId: cart.cartId,
       },
     };
@@ -384,6 +404,7 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
         body: JSON.stringify(error.message),
         sessionData: {
           ...request.sessionData,
+          token: cartApi.token,
           cartId: cart.cartId,
         },
       };
@@ -398,8 +419,8 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
 };
 
 export const removeDiscount: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-  let cart = await CartFetcher.fetchCart(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+  let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const body: {
     discountId?: string;
@@ -416,6 +437,7 @@ export const removeDiscount: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
+      token: cartApi.token,
       cartId: cart.cartId,
     },
   };

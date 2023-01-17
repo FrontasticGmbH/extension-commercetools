@@ -2,12 +2,9 @@ import { ActionContext, Request } from '@frontastic/extension-types';
 import { Cart } from '../../../types/cart/Cart';
 import { CartApi } from '../apis/CartApi';
 import { Guid } from './Guid';
-import { getLocale } from './Request';
 
 export class CartFetcher {
-  static async fetchCart(request: Request, actionContext: ActionContext): Promise<Cart> {
-    const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-
+  static async fetchCart(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
     if (request.sessionData?.account !== undefined) {
       return await cartApi.getForUser(request.sessionData.account);
     }

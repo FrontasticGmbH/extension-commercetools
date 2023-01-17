@@ -5,8 +5,12 @@ import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
+function getProjectApi(request: Request, actionContext: ActionContext) {
+  return new ProjectApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+}
+
 export const getProjectSettings: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const projectApi = new ProjectApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  const projectApi = getProjectApi(request, actionContext);
 
   const project = await projectApi.getProjectSettings();
 

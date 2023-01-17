@@ -5,6 +5,7 @@ import { Category } from '../../../types/product/Category';
 import { getLocale, getPath } from './Request';
 import { Result } from '../../../types/product/Result';
 import { ProductQueryFactory } from './ProductQueryFactory';
+import { getToken } from './Token';
 
 export class CategoryRouter {
   static identifyFrom(request: Request) {
@@ -16,7 +17,7 @@ export class CategoryRouter {
   }
 
   static loadFor = async (request: Request, frontasticContext: Context): Promise<Result> => {
-    const productApi = new ProductApi(frontasticContext, getLocale(request));
+    const productApi = new ProductApi(frontasticContext, getLocale(request), getToken(request));
 
     // We are using the last subdirectory of the path to identify the category slug
     const urlMatches = getPath(request)?.match(/[^/]+(?=\/$|$)/);

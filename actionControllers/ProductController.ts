@@ -9,8 +9,12 @@ import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
+function getProductApi(request: Request, actionContext: ActionContext) {
+  return new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+}
+
 export const getProduct: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  const productApi = getProductApi(request, actionContext);
 
   let productQuery: ProductQuery = {};
 
@@ -41,7 +45,7 @@ export const getProduct: ActionHook = async (request: Request, actionContext: Ac
 };
 
 export const query: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  const productApi = getProductApi(request, actionContext);
 
   const productQuery = ProductQueryFactory.queryFromParams(request);
 
@@ -60,7 +64,7 @@ export const query: ActionHook = async (request: Request, actionContext: ActionC
 };
 
 export const queryCategories: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  const productApi = getProductApi(request, actionContext);
 
   const categoryQuery: CategoryQuery = {
     limit: request.query?.limit ?? undefined,
@@ -83,7 +87,7 @@ export const queryCategories: ActionHook = async (request: Request, actionContex
 };
 
 export const searchableAttributes: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  const productApi = getProductApi(request, actionContext);
 
   const result = await productApi.getSearchableAttributes();
 

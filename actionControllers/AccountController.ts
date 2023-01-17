@@ -7,6 +7,8 @@ import { CartFetcher } from '../utils/CartFetcher';
 import { getLocale } from '../utils/Request';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
+import { getToken } from '../utils/Token';
+import { CartApi } from '../apis/CartApi';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -33,10 +35,19 @@ type AccountChangePasswordBody = {
   newPassword: string;
 };
 
-async function loginAccount(request: Request, actionContext: ActionContext, account: Account): Promise<Response> {
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+function getAccountApi(request: Request, actionContext: ActionContext) {
+  return new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+}
 
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+function getCartApi(request: Request, actionContext: ActionContext) {
+  return new CartApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+}
+
+async function loginAccount(request: Request, actionContext: ActionContext, account: Account): Promise<Response> {
+  const accountApi = getAccountApi(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   try {
     account = await accountApi.login(account, cart);
@@ -47,6 +58,7 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
         body: JSON.stringify(error.message),
         sessionData: {
           ...request.sessionData,
+          token: accountApi.token,
           account: account,
         },
       };
@@ -65,6 +77,7 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
       body: JSON.stringify(`Your email address "${account.email}" was not yet verified.`),
       sessionData: {
         ...request.sessionData,
+        token: accountApi.token,
         account: account,
       },
     };
@@ -77,6 +90,7 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account: account,
     },
   };
@@ -172,10 +186,12 @@ export const getAccount: ActionHook = async (request: Request, actionContext: Ac
 export const register: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const locale = getLocale(request);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, locale);
+  const accountApi = getAccountApi(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
+
   const accountData = mapRequestToAccount(request);
 
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   const account = await accountApi.create(accountData, cart);
 
@@ -189,6 +205,7 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
     statusCode: 200,
     body: JSON.stringify(account),
     sessionData: {
+      token: accountApi.token,
       ...request.sessionData,
     },
   };
@@ -199,7 +216,8 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 export const requestConfirmationEmail: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const locale = getLocale(request);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, locale);
+  const accountApi = getAccountApi(request, actionContext);
+  const cartApi = getCartApi(request, actionContext);
 
   const accountLoginBody: AccountLoginBody = JSON.parse(request.body);
 
@@ -208,7 +226,7 @@ export const requestConfirmationEmail: ActionHook = async (request: Request, act
     password: accountLoginBody.password,
   } as Account;
 
-  const cart = await CartFetcher.fetchCart(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 
   account = await accountApi.login(account, cart);
 
@@ -218,6 +236,7 @@ export const requestConfirmationEmail: ActionHook = async (request: Request, act
       body: JSON.stringify(`Your email address "${account.email}" was verified already.`),
       sessionData: {
         ...request.sessionData,
+        token: accountApi.token,
         account: account,
       },
     };
@@ -233,6 +252,7 @@ export const requestConfirmationEmail: ActionHook = async (request: Request, act
     body: JSON.stringify({}),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
     },
   };
 
@@ -240,7 +260,7 @@ export const requestConfirmationEmail: ActionHook = async (request: Request, act
 };
 
 export const confirm: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   type AccountConfirmBody = {
     token?: string;
@@ -255,6 +275,7 @@ export const confirm: ActionHook = async (request: Request, actionContext: Actio
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account: account,
     },
   };
@@ -292,7 +313,7 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
 
   let account = fetchAccountFromSession(request);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   const accountChangePasswordBody: AccountChangePasswordBody = JSON.parse(request.body);
 
@@ -307,6 +328,7 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -336,6 +358,7 @@ export const requestReset: ActionHook = async (request: Request, actionContext: 
     body: JSON.stringify({}),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       // TODO: should we redirect to logout rather to unset the account?
       account: undefined,
     },
@@ -353,7 +376,7 @@ export const reset: ActionHook = async (request: Request, actionContext: ActionC
 
   const accountResetBody: AccountResetBody = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   const account = await accountApi.resetPassword(accountResetBody.token, accountResetBody.newPassword);
   account.password = accountResetBody.newPassword;
@@ -366,7 +389,7 @@ export const update: ActionHook = async (request: Request, actionContext: Action
 
   let account = fetchAccountFromSession(request);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = {
     ...account,
@@ -380,6 +403,7 @@ export const update: ActionHook = async (request: Request, actionContext: Action
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -392,7 +416,7 @@ export const addAddress: ActionHook = async (request: Request, actionContext: Ac
 
   const address: Address = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = await accountApi.addAddress(account, address);
 
@@ -401,6 +425,7 @@ export const addAddress: ActionHook = async (request: Request, actionContext: Ac
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -413,7 +438,7 @@ export const updateAddress: ActionHook = async (request: Request, actionContext:
 
   const address: Address = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = await accountApi.updateAddress(account, address);
 
@@ -422,6 +447,7 @@ export const updateAddress: ActionHook = async (request: Request, actionContext:
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -434,7 +460,7 @@ export const removeAddress: ActionHook = async (request: Request, actionContext:
 
   const address: Address = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = await accountApi.removeAddress(account, address);
 
@@ -443,6 +469,7 @@ export const removeAddress: ActionHook = async (request: Request, actionContext:
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -455,7 +482,7 @@ export const setDefaultBillingAddress: ActionHook = async (request: Request, act
 
   const address: Address = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = await accountApi.setDefaultBillingAddress(account, address);
 
@@ -464,6 +491,7 @@ export const setDefaultBillingAddress: ActionHook = async (request: Request, act
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
@@ -476,7 +504,7 @@ export const setDefaultShippingAddress: ActionHook = async (request: Request, ac
 
   const address: Address = JSON.parse(request.body);
 
-  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request));
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getToken(request));
 
   account = await accountApi.setDefaultShippingAddress(account, address);
 
@@ -485,6 +513,7 @@ export const setDefaultShippingAddress: ActionHook = async (request: Request, ac
     body: JSON.stringify(account),
     sessionData: {
       ...request.sessionData,
+      token: accountApi.token,
       account,
     },
   } as Response;
