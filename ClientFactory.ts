@@ -3,12 +3,12 @@ import {
   Client,
   AuthMiddlewareOptions,
   HttpMiddlewareOptions,
+  RefreshAuthMiddlewareOptions,
   TokenCache,
 } from '@commercetools/sdk-client-v2';
 // @ts-ignore
 import fetch from 'node-fetch';
 import { ClientConfig } from './interfaces/ClientConfig';
-import { RefreshAuthMiddlewareOptions } from '@commercetools/sdk-client-v2/dist/declarations/src/types/sdk';
 
 export class ClientFactory {
   static factor: (
