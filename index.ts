@@ -22,6 +22,7 @@ import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
+import { getToken } from './utils/Token';
 
 export default {
   'dynamic-page-handler': async (
@@ -95,7 +96,10 @@ export default {
   },
   'data-sources': {
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-      const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
+      const locale = context.request ? getLocale(context.request) : null;
+      const token = context.request ? getToken(context.request) : undefined;
+
+      const productApi = new ProductApi(context.frontasticContext, locale, token);
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
       return await productApi.query(productQuery).then((queryResult) => {
         return {
@@ -111,7 +115,10 @@ export default {
         });
       }
 
-      const productApi = new ProductApi(context.frontasticContext, getLocale(context.request));
+      const locale = context.request ? getLocale(context.request) : null;
+      const token = context.request ? getToken(context.request) : undefined;
+
+      const productApi = new ProductApi(context.frontasticContext, locale, token);
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
       const queryWithCategoryId = {
         ...productQuery,
@@ -128,7 +135,10 @@ export default {
     },
 
     'frontastic/product': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-      const productApi = new ProductApi(context.frontasticContext, context.request ? getLocale(context.request) : null);
+      const locale = context.request ? getLocale(context.request) : null;
+      const token = context.request ? getToken(context.request) : undefined;
+
+      const productApi = new ProductApi(context.frontasticContext, locale, token);
 
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
