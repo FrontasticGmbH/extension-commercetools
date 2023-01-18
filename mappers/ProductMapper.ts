@@ -65,10 +65,6 @@ export class ProductMapper {
     defaultLocale: string
   ) => {
 
-
-    console.log("localized", getLocalizedValue(commercetoolsProduct?.description, locale, defaultLocale))
-
-
     const product: Product = {
       productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),

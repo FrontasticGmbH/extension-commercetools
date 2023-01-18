@@ -3,23 +3,20 @@ import {LocalizedString} from "@commercetools/platform-sdk/dist/declarations/src
 
 const getLocalizedValue = (productValue: LocalizedString, locale: Locale, defaultLocale: string): string => {
 
-  let finalLocalizedString;
-
-  //We should check if value is not empty to avoid errors
-  if (productValue) {
-    if (productValue[locale.language]) {
-      finalLocalizedString = productValue[locale.language];
-    } else if (productValue[defaultLocale]) {
-      finalLocalizedString = productValue[defaultLocale];
-    } else {
-      finalLocalizedString = productValue[0];
-    }
-  } else {
-    finalLocalizedString = productValue;
+  if (!productValue) {
+    return ""
+  }
+  if (productValue[locale.language]) {
+    return productValue[locale.language];
+  }
+  if (productValue[locale.language]) {
+    return productValue[locale.language];
+  }
+  if (productValue[defaultLocale]) {
+    return productValue[defaultLocale];
   }
 
-
-  return finalLocalizedString as string
+  return productValue[0];
 
 }
 
