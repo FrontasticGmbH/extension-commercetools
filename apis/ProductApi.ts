@@ -130,6 +130,7 @@ export class ProductApi extends BaseApi {
             this.productIdField,
             this.categoryIdField,
             locale,
+            this.defaultLocale
           ),
         );
 
