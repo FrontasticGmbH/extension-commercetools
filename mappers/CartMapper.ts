@@ -28,7 +28,7 @@ import { Payment } from '../../../types/cart/Payment';
 import { Tax } from '../../../types/cart/Tax';
 import { TaxPortion } from '../../../types/cart/TaxPortion';
 import { Discount } from '../../../types/cart/Discount';
-import getLocalizedValue from "../utils/GetLocalizedValue";
+import LocalizedValue from "../../../../../saas/project-libraries/extensions/commerce-commercetools/utils/LocalizedValue";
 
 export class CartMapper {
   static commercetoolsCartToCart: (commercetoolsCart: CommercetoolsCart, locale: Locale, defaultLocale: string) => Cart = (
@@ -62,7 +62,7 @@ export class CartMapper {
       const item: LineItem = {
         lineItemId: commercetoolsLineItem.id,
         productId: commercetoolsLineItem.productId,
-        name: getLocalizedValue(commercetoolsLineItem?.name, locale, defaultLocale)  || '',
+        name: LocalizedValue.getLocalizedValue(commercetoolsLineItem?.name, locale, defaultLocale)  || '',
         type: 'variant',
         count: commercetoolsLineItem.quantity,
         price: ProductMapper.commercetoolsMoneyToMoney(commercetoolsLineItem.price?.value),
@@ -182,8 +182,8 @@ export class CartMapper {
   ) => ShippingMethod = (commercetoolsShippingMethod: CommercetoolsShippingMethod, locale: Locale,  defaultLocale: string) => {
     return {
       shippingMethodId: commercetoolsShippingMethod?.id || undefined,
-      name: getLocalizedValue(commercetoolsShippingMethod?.localizedName, locale, defaultLocale)|| undefined,
-      description: getLocalizedValue(commercetoolsShippingMethod?.localizedDescription, locale, defaultLocale) || undefined,
+      name: LocalizedValue.getLocalizedValue(commercetoolsShippingMethod?.localizedName, locale, defaultLocale)|| undefined,
+      description: LocalizedValue.getLocalizedValue(commercetoolsShippingMethod?.localizedDescription, locale, defaultLocale) || undefined,
       rates: CartMapper.commercetoolsZoneRatesToRates(commercetoolsShippingMethod?.zoneRates, locale),
     } as ShippingMethod;
   };
@@ -302,8 +302,8 @@ export class CartMapper {
         ...discount,
         discountId: commercetoolsDiscountCode.id,
         code: commercetoolsDiscountCode.code,
-        name:  getLocalizedValue(commercetoolsDiscountCode.name, locale, defaultLocale) ||  undefined,
-        description: getLocalizedValue(commercetoolsDiscountCode.description, locale, defaultLocale) || undefined,
+        name:  LocalizedValue.getLocalizedValue(commercetoolsDiscountCode.name, locale, defaultLocale) ||  undefined,
+        description: LocalizedValue.getLocalizedValue(commercetoolsDiscountCode.description, locale, defaultLocale) || undefined,
       };
     }
 
@@ -324,7 +324,7 @@ export class CartMapper {
     commercetoolsDiscountedLineItemPricesForQuantity?.forEach((commercetoolsDiscountedLineItemPriceForQuantity) => {
       commercetoolsDiscountedLineItemPriceForQuantity.discountedPrice.includedDiscounts.forEach(
         (commercetoolsDiscountedLineItemPortion) => {
-          discountTexts.push(getLocalizedValue(commercetoolsDiscountedLineItemPortion.discount.obj?.name, locale, defaultLocale));
+          discountTexts.push(LocalizedValue.getLocalizedValue(commercetoolsDiscountedLineItemPortion.discount.obj?.name, locale, defaultLocale));
         },
       );
     });
@@ -373,8 +373,8 @@ export class CartMapper {
       discount = {
         ...discount,
         discountId: commercetoolsCartDiscount.id,
-        name: getLocalizedValue(commercetoolsCartDiscount.name, locale, defaultLocale)|| undefined,
-        description:getLocalizedValue(commercetoolsCartDiscount.description, locale, defaultLocale) || undefined,
+        name: LocalizedValue.getLocalizedValue(commercetoolsCartDiscount.name, locale, defaultLocale)|| undefined,
+        description:LocalizedValue.getLocalizedValue(commercetoolsCartDiscount.description, locale, defaultLocale) || undefined,
       };
     }
 

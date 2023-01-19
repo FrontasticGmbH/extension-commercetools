@@ -37,8 +37,7 @@ import { RangeFacet as QueryRangeFacet } from '../../../types/query/RangeFacet';
 import { Facet as QueryFacet } from '../../../types/query/Facet';
 import { FacetDefinition } from '../../../types/product/FacetDefinition';
 import { FilterTypes } from '../../../types/query/Filter';
-import * as console from "console";
-import getLocalizedValue from "../utils/GetLocalizedValue";
+import LocalizedValue from "../utils/LocalizedValue";
 
 const TypeMap = new Map<string, string>([
   ['boolean', FilterFieldTypes.BOOLEAN],
@@ -68,9 +67,9 @@ export class ProductMapper {
     const product: Product = {
       productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),
-      name:  getLocalizedValue(commercetoolsProduct?.name, locale, defaultLocale),
-      slug: getLocalizedValue(commercetoolsProduct?.slug, locale, defaultLocale),
-      description:  getLocalizedValue(commercetoolsProduct?.description, locale, defaultLocale),
+      name:  LocalizedValue.getLocalizedValue(commercetoolsProduct?.name, locale, defaultLocale),
+      slug: LocalizedValue.getLocalizedValue(commercetoolsProduct?.slug, locale, defaultLocale),
+      description:  LocalizedValue.getLocalizedValue(commercetoolsProduct?.description, locale, defaultLocale),
       categories: ProductMapper.commercetoolsCategoryReferencesToCategories(
         commercetoolsProduct.categories,
         categoryIdField,

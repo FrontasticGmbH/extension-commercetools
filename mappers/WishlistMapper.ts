@@ -5,7 +5,7 @@ import { Locale } from '../Locale';
 import { LineItem } from '../../../types/wishlist/LineItem';
 import { ProductRouter } from '../utils/ProductRouter';
 import { ProductMapper } from './ProductMapper';
-import getLocalizedValue from "../utils/GetLocalizedValue";
+import LocalizedValue from "../utils/LocalizedValue";
 
 export class WishlistMapper {
   static commercetoolsShoppingListToWishlist = (commercetoolsShoppingList: ShoppingList, locale: Locale, defaultLocale:string): Wishlist => {
@@ -14,7 +14,7 @@ export class WishlistMapper {
       wishlistVersion: commercetoolsShoppingList.version.toString(),
       anonymousId: commercetoolsShoppingList.anonymousId,
       accountId: commercetoolsShoppingList.customer?.id ?? undefined,
-      name: getLocalizedValue(commercetoolsShoppingList.name, locale, defaultLocale),
+      name: LocalizedValue.getLocalizedValue(commercetoolsShoppingList.name, locale, defaultLocale),
       lineItems: (commercetoolsShoppingList.lineItems || []).map((lineItem) =>
         WishlistMapper.commercetoolsLineItemToLineItem(lineItem, locale, defaultLocale),
       ),
@@ -29,7 +29,7 @@ export class WishlistMapper {
     const lineItem: LineItem = {
       lineItemId: commercetoolsLineItem.id,
       productId: commercetoolsLineItem.productId,
-      name:getLocalizedValue(commercetoolsLineItem.name, locale, defaultLocale),
+      name:LocalizedValue.getLocalizedValue(commercetoolsLineItem.name, locale, defaultLocale),
       type: 'variant',
       addedAt: new Date(commercetoolsLineItem.addedAt),
       count: commercetoolsLineItem.quantity,
