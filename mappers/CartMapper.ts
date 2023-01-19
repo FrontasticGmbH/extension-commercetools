@@ -28,7 +28,7 @@ import { Payment } from '../../../types/cart/Payment';
 import { Tax } from '../../../types/cart/Tax';
 import { TaxPortion } from '../../../types/cart/TaxPortion';
 import { Discount } from '../../../types/cart/Discount';
-import LocalizedValue from "../../../../../saas/project-libraries/extensions/commerce-commercetools/utils/LocalizedValue";
+import LocalizedValue from "../utils/LocalizedValue";
 
 export class CartMapper {
   static commercetoolsCartToCart: (commercetoolsCart: CommercetoolsCart, locale: Locale, defaultLocale: string) => Cart = (

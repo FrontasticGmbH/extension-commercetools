@@ -1,9 +1,9 @@
-import {Locale} from "../Locale";
-import {LocalizedString} from "@commercetools/platform-sdk/dist/declarations/src/generated/models/common";
+import { Locale } from "../Locale";
+import { LocalizedString } from "@commercetools/platform-sdk/dist/declarations/src/generated/models/common";
 
 
-export default class LocalizedValue{
-  static  getLocalizedValue = (productValue: LocalizedString, locale: Locale, defaultLocale: string): string => {
+export default class LocalizedValue {
+  static getLocalizedValue = (productValue: LocalizedString, locale: Locale, defaultLocale: string): string => {
 
     if (!productValue) {
       return ""
