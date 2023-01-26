@@ -3,7 +3,7 @@ import { LocalizedString } from "@commercetools/platform-sdk/dist/declarations/s
 
 
 export default class LocalizedValue {
-  static getLocalizedValue = (productValue: LocalizedString, locale: Locale, defaultLocale: string): string => {
+  static getLocalizedValue = ( locale: Locale, defaultLocale: string, productValue?: LocalizedString,): string => {
 
     if (!productValue) {
       return ""

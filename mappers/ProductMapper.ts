@@ -67,9 +67,9 @@ export class ProductMapper {
     const product: Product = {
       productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),
-      name:  LocalizedValue.getLocalizedValue(commercetoolsProduct?.name, locale, defaultLocale),
-      slug: LocalizedValue.getLocalizedValue(commercetoolsProduct?.slug, locale, defaultLocale),
-      description:  LocalizedValue.getLocalizedValue(commercetoolsProduct?.description, locale, defaultLocale),
+      name:  LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.name),
+      slug: LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.slug),
+      description:  LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.description),
       categories: ProductMapper.commercetoolsCategoryReferencesToCategories(
         commercetoolsProduct.categories,
         categoryIdField,

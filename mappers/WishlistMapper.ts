@@ -14,7 +14,7 @@ export class WishlistMapper {
       wishlistVersion: commercetoolsShoppingList.version.toString(),
       anonymousId: commercetoolsShoppingList.anonymousId,
       accountId: commercetoolsShoppingList.customer?.id ?? undefined,
-      name: LocalizedValue.getLocalizedValue(commercetoolsShoppingList.name, locale, defaultLocale),
+      name: LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsShoppingList.name),
       lineItems: (commercetoolsShoppingList.lineItems || []).map((lineItem) =>
         WishlistMapper.commercetoolsLineItemToLineItem(lineItem, locale, defaultLocale),
       ),
@@ -29,7 +29,7 @@ export class WishlistMapper {
     const lineItem: LineItem = {
       lineItemId: commercetoolsLineItem.id,
       productId: commercetoolsLineItem.productId,
-      name:LocalizedValue.getLocalizedValue(commercetoolsLineItem.name, locale, defaultLocale),
+      name:LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsLineItem.name),
       type: 'variant',
       addedAt: new Date(commercetoolsLineItem.addedAt),
       count: commercetoolsLineItem.quantity,
