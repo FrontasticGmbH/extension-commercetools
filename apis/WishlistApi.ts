@@ -23,7 +23,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -43,7 +43,7 @@ export class WishlistApi extends BaseApi {
       .execute()
       .then((response) => {
         return response.body.results.map((shoppingList) =>
-          WishlistMapper.commercetoolsShoppingListToWishlist(shoppingList, locale),
+          WishlistMapper.commercetoolsShoppingListToWishlist(shoppingList, locale, this.defaultLocale),
         );
       })
       .catch((error) => {
@@ -64,7 +64,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -84,7 +84,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -114,7 +114,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -143,7 +143,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -173,7 +173,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });

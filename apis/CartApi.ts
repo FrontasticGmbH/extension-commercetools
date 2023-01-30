@@ -339,7 +339,7 @@ export class CartApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return CartMapper.commercetoolsOrderToOrder(response.body, locale);
+        return CartMapper.commercetoolsOrderToOrder(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -364,7 +364,7 @@ export class CartApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return response.body.results.map((order) => CartMapper.commercetoolsOrderToOrder(order, locale));
+        return response.body.results.map((order) => CartMapper.commercetoolsOrderToOrder(order, locale, this.defaultLocale));
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -392,7 +392,7 @@ export class CartApi extends BaseApi {
       .execute()
       .then((response) => {
         return response.body.results.map((shippingMethod) =>
-          CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale),
+          CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale, this.defaultLocale),
         );
       })
       .catch((error) => {
@@ -415,7 +415,7 @@ export class CartApi extends BaseApi {
       .execute()
       .then((response) => {
         return response.body.results.map((shippingMethod) =>
-          CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale),
+          CartMapper.commercetoolsShippingMethodToShippingMethod(shippingMethod, locale, this.defaultLocale),
         );
       })
       .catch((error) => {
@@ -468,7 +468,7 @@ export class CartApi extends BaseApi {
     const commercetoolsCart = await this.updateCart(cart.cartId, cartUpdate, locale);
 
     return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
-  };  
+  };
 
   updatePayment: (cart: Cart, payment: Payment) => Promise<Payment> = async (cart: Cart, payment: Payment) => {
     const locale = await this.getCommercetoolsLocal();
@@ -535,12 +535,12 @@ export class CartApi extends BaseApi {
       .get()
       .execute()
   };
-    
+
   updateOrderPayment: (paymentId: string, paymentDraft: Payment) => Promise<any> = async (paymentId: string, paymentDraft: Payment) => {
     const locale = await this.getCommercetoolsLocal();
 
     const paymentUpdateActions: PaymentUpdateAction[] = [];
-    
+
     /*if (paymentDraft.) {
       paymentUpdateActions.push({
         action: 'setMethodInfoName',
@@ -585,7 +585,7 @@ export class CartApi extends BaseApi {
       .payments()
       .withId({
         ID: paymentId,
-      })      
+      })
       .post({
         body: {
           version: paymentDraft.version,
@@ -599,7 +599,7 @@ export class CartApi extends BaseApi {
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
-      });   
+      });
   };
 
   redeemDiscountCode: (cart: Cart, code: string) => Promise<Cart> = async (cart: Cart, code: string) => {
@@ -716,10 +716,10 @@ export class CartApi extends BaseApi {
 
       commercetoolsCart = await this.updateCart(commercetoolsCart.id, cartUpdate, locale);
 
-      return CartMapper.commercetoolsCartToCart(commercetoolsCart, locale);
+      return CartMapper.commercetoolsCartToCart(commercetoolsCart, locale, this.defaultLocale);
     }
 
-    return CartMapper.commercetoolsCartToCart(commercetoolsCart, locale);
+    return CartMapper.commercetoolsCartToCart(commercetoolsCart, locale, this.defaultLocale);
   };
 
   protected recreate: (primaryCommercetoolsCart: CommercetoolsCart, locale: Locale) => Promise<Cart> = async (
@@ -826,7 +826,7 @@ export class CartApi extends BaseApi {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
-    return CartMapper.commercetoolsCartToCart(replicatedCommercetoolsCart, locale);
+    return CartMapper.commercetoolsCartToCart(replicatedCommercetoolsCart, locale, this.defaultLocale);
   };
 
   protected doesCartNeedLocaleUpdate: (commercetoolsCart: CommercetoolsCart, locale: Locale) => boolean = (
