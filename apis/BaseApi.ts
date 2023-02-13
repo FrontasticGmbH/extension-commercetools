@@ -10,6 +10,7 @@ import { TokenCache, TokenStore } from '@commercetools/sdk-client-v2';
 import { ClientConfig } from '../interfaces/ClientConfig';
 import { Token } from '@Types/Token';
 import { tokenHasExpired } from '../utils/Token';
+import crypto from 'crypto';
 
 const defaultCurrency = 'EUR';
 
@@ -393,6 +394,8 @@ const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrenci
   return undefined;
 };
 
+const clientTokensStored = new Map<string, Token>();
+
 export abstract class BaseApi {
   protected apiRoot: ApiRoot;
   protected clientSettings: ClientConfig;
@@ -402,10 +405,11 @@ export abstract class BaseApi {
   protected categoryIdField: string;
   protected locale: string;
   protected defaultLocale: string;
+  protected clientHashKey: string;
   protected commercetoolsTokenCache: TokenCache;
   public token: Token;
 
-  constructor(frontasticContext: Context, locale: string | null, token?: Token | undefined) {
+  constructor(frontasticContext: Context, locale: string | null) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
     this.locale = locale !== null ? locale : this.defaultLocale;
 
@@ -417,8 +421,13 @@ export abstract class BaseApi {
     this.productIdField = this.clientSettings?.productIdField || 'key';
     this.categoryIdField = this.clientSettings?.categoryIdField || 'key';
 
-    this.token = token;
-    this.commercetoolsTokenCache = (() => {
+    this.token = clientTokensStored.get(this.getClientHashKey());
+
+    this.commercetoolsTokenCache = this.buildCommercetoolsTokenCache();
+  }
+
+  private buildCommercetoolsTokenCache(): TokenCache {
+    return (() => {
       const get = () => {
         if (this.token === undefined) {
           return undefined;
@@ -439,10 +448,24 @@ export abstract class BaseApi {
           expirationTime: tokenStore.expirationTime,
           refreshToken: tokenStore.refreshToken,
         };
+        clientTokensStored.set(this.getClientHashKey(), this.token);
       };
 
       return { get, set };
     })();
+  }
+
+  private getClientHashKey(): string {
+    if (this.clientHashKey) {
+      return this.clientHashKey;
+    }
+
+    this.clientHashKey = crypto
+      .createHash('md5')
+      .update(this.clientSettings.clientId + this.clientSettings.clientSecret + this.clientSettings.projectKey)
+      .digest('hex');
+
+    return this.clientHashKey;
   }
 
   protected getApiForProject(): ByProjectKeyRequestBuilder {

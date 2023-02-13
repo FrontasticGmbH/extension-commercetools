@@ -3,7 +3,6 @@ import { ProductQueryFactory } from './ProductQueryFactory';
 import { Result } from '../../../types/product/Result';
 import { ProductApi } from '../apis/ProductApi';
 import { getPath, getLocale } from './Request';
-import { getToken } from './Token';
 
 export class SearchRouter {
   static identifyFrom(request: Request) {
@@ -17,7 +16,7 @@ export class SearchRouter {
   }
 
   static loadFor = async (request: Request, frontasticContext: Context): Promise<Result> | null => {
-    const productApi = new ProductApi(frontasticContext, getLocale(request), getToken(request));
+    const productApi = new ProductApi(frontasticContext, getLocale(request));
 
     const urlMatches = getPath(request)?.match(/\/search/);
 

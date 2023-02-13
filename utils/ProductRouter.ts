@@ -5,7 +5,6 @@ import { ProductApi } from '../apis/ProductApi';
 import { LineItem } from '../../../types/cart/LineItem';
 import { getPath, getLocale } from './Request';
 import { LineItem as WishlistItem } from '../../../types/wishlist/LineItem';
-import { getToken } from './Token';
 
 export class ProductRouter {
   private static isProduct(product: Product | LineItem | WishlistItem): product is Product {
@@ -29,7 +28,7 @@ export class ProductRouter {
   }
 
   static loadFor = async (request: Request, frontasticContext: Context): Promise<Product> => {
-    const productApi = new ProductApi(frontasticContext, getLocale(request), getToken(request));
+    const productApi = new ProductApi(frontasticContext, getLocale(request));
 
     const urlMatches = getPath(request)?.match(/\/p\/([^\/]+)/);
 

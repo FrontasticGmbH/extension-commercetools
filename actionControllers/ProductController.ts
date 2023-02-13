@@ -5,12 +5,11 @@ import { ProductQueryFactory } from '../utils/ProductQueryFactory';
 import { ProductQuery } from '../../../types/query/ProductQuery';
 import { CategoryQuery } from '../../../types/query/CategoryQuery';
 import { getLocale } from '../utils/Request';
-import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getProductApi(request: Request, actionContext: ActionContext) {
-  return new ProductApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  return new ProductApi(actionContext.frontasticContext, getLocale(request));
 }
 
 export const getProduct: ActionHook = async (request: Request, actionContext: ActionContext) => {
@@ -37,7 +36,6 @@ export const getProduct: ActionHook = async (request: Request, actionContext: Ac
     body: JSON.stringify(product),
     sessionData: {
       ...request.sessionData,
-      token: productApi.token,
     },
   };
 
@@ -56,7 +54,6 @@ export const query: ActionHook = async (request: Request, actionContext: ActionC
     body: JSON.stringify(queryResult),
     sessionData: {
       ...request.sessionData,
-      token: productApi.token,
     },
   };
 
@@ -79,7 +76,6 @@ export const queryCategories: ActionHook = async (request: Request, actionContex
     body: JSON.stringify(queryResult),
     sessionData: {
       ...request.sessionData,
-      token: productApi.token,
     },
   };
 
@@ -96,7 +92,6 @@ export const searchableAttributes: ActionHook = async (request: Request, actionC
     body: JSON.stringify(result),
     sessionData: {
       ...request.sessionData,
-      token: productApi.token,
     },
   };
 

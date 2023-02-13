@@ -12,12 +12,11 @@ import { Discount } from '../../../types/cart/Discount';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
-import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getCartApi(request: Request, actionContext: ActionContext) {
-  return new CartApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  return new CartApi(actionContext.frontasticContext, getLocale(request));
 }
 
 async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
@@ -58,7 +57,6 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -91,7 +89,6 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -121,7 +118,6 @@ export const updateLineItem: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -150,7 +146,6 @@ export const removeLineItem: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -169,7 +164,6 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -196,7 +190,6 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId,
     },
   };
@@ -220,7 +213,6 @@ export const getOrders: ActionHook = async (request: Request, actionContext: Act
     body: JSON.stringify(orders),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
     },
   };
   return response;
@@ -237,7 +229,6 @@ export const getShippingMethods: ActionHook = async (request: Request, actionCon
     body: JSON.stringify(shippingMethods),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
     },
   };
 
@@ -255,7 +246,6 @@ export const getAvailableShippingMethods: ActionHook = async (request: Request, 
     body: JSON.stringify(availableShippingMethods),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -282,7 +272,6 @@ export const setShippingMethod: ActionHook = async (request: Request, actionCont
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -319,7 +308,6 @@ export const addPaymentByInvoice: ActionHook = async (request: Request, actionCo
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -367,7 +355,6 @@ export const updatePayment: ActionHook = async (request: Request, actionContext:
     body: JSON.stringify(payment),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId: cart.cartId,
     },
   };
@@ -393,7 +380,6 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
       body: JSON.stringify(cart),
       sessionData: {
         ...request.sessionData,
-        token: cartApi.token,
         cartId: cart.cartId,
       },
     };
@@ -404,7 +390,6 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
         body: JSON.stringify(error.message),
         sessionData: {
           ...request.sessionData,
-          token: cartApi.token,
           cartId: cart.cartId,
         },
       };
@@ -437,7 +422,6 @@ export const removeDiscount: ActionHook = async (request: Request, actionContext
     body: JSON.stringify(cart),
     sessionData: {
       ...request.sessionData,
-      token: cartApi.token,
       cartId: cart.cartId,
     },
   };

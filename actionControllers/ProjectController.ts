@@ -1,12 +1,11 @@
 import { ActionContext, Request, Response } from '@frontastic/extension-types';
 import { getLocale } from '../utils/Request';
 import { ProjectApi } from '../apis/ProjectApi';
-import { getToken } from '../utils/Token';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getProjectApi(request: Request, actionContext: ActionContext) {
-  return new ProjectApi(actionContext.frontasticContext, getLocale(request), getToken(request));
+  return new ProjectApi(actionContext.frontasticContext, getLocale(request));
 }
 
 export const getProjectSettings: ActionHook = async (request: Request, actionContext: ActionContext) => {
@@ -19,7 +18,6 @@ export const getProjectSettings: ActionHook = async (request: Request, actionCon
     body: JSON.stringify(project),
     sessionData: {
       ...request.sessionData,
-      token: projectApi.token,
     },
   };
 
