@@ -1,4 +1,10 @@
 
+## Version 1.3.0 (2023-02-15)
+
+** New Features and Improvements **
+
+- Moved token storage from session to global variable
+
 ## Version 1.2.0 (2023-02-03)
 
 ** New Features and Improvements **
