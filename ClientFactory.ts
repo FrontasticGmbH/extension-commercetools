@@ -27,43 +27,25 @@ export class ClientFactory {
       fetch,
     };
 
-    let clientBuilder: ClientBuilder = undefined;
+    let clientBuilder: ClientBuilder;
 
-    if (refreshToken) {
-      const refreshAuthMiddlewareOptions: RefreshAuthMiddlewareOptions = {
-        host: clientConfig.authUrl,
-        projectKey: clientConfig.projectKey,
-        credentials: {
-          clientId: clientConfig.clientId,
-          clientSecret: clientConfig.clientSecret,
-        },
-        // scopes: ['manage_project:' + clientConfig.projectKey],
-        fetch,
-        tokenCache: tokenCache,
-        refreshToken: refreshToken,
-      };
+    switch (true) {
+      case refreshToken !== undefined:
+        clientBuilder = ClientFactory.getClientBuilderWithRefreshTokenFlow(
+          clientConfig,
+          tokenCache,
+          refreshToken,
+          httpMiddlewareOptions,
+        );
+        break;
 
-      clientBuilder = new ClientBuilder()
-        .withHttpMiddleware(httpMiddlewareOptions)
-        .withRefreshTokenFlow(refreshAuthMiddlewareOptions);
-    }
-
-    if (clientBuilder === undefined) {
-      const authMiddlewareOptions: AuthMiddlewareOptions = {
-        host: clientConfig.authUrl,
-        projectKey: clientConfig.projectKey,
-        credentials: {
-          clientId: clientConfig.clientId,
-          clientSecret: clientConfig.clientSecret,
-        },
-        // scopes: ['manage_project:' + clientConfig.projectKey],
-        fetch,
-        tokenCache: tokenCache,
-      };
-
-      clientBuilder = new ClientBuilder()
-        .withHttpMiddleware(httpMiddlewareOptions)
-        .withClientCredentialsFlow(authMiddlewareOptions);
+      default:
+        clientBuilder = ClientFactory.getClientBuilderWithClientCredentialsFlow(
+          clientConfig,
+          tokenCache,
+          httpMiddlewareOptions,
+        );
+        break;
     }
 
     // To avoid logging sensible data, only enable the logger if the environment is defined and not production.
@@ -73,4 +55,50 @@ export class ClientFactory {
 
     return clientBuilder.build();
   };
+
+  private static getClientBuilderWithRefreshTokenFlow(
+    clientConfig: ClientConfig,
+    tokenCache: TokenCache,
+    refreshToken: string,
+    httpMiddlewareOptions: HttpMiddlewareOptions,
+  ) {
+    const refreshAuthMiddlewareOptions: RefreshAuthMiddlewareOptions = {
+      host: clientConfig.authUrl,
+      projectKey: clientConfig.projectKey,
+      credentials: {
+        clientId: clientConfig.clientId,
+        clientSecret: clientConfig.clientSecret,
+      },
+      // scopes: ['manage_project:' + clientConfig.projectKey],
+      fetch,
+      tokenCache: tokenCache,
+      refreshToken: refreshToken,
+    };
+
+    return new ClientBuilder()
+      .withHttpMiddleware(httpMiddlewareOptions)
+      .withRefreshTokenFlow(refreshAuthMiddlewareOptions);
+  }
+
+  private static getClientBuilderWithClientCredentialsFlow(
+    clientConfig: ClientConfig,
+    tokenCache: TokenCache,
+    httpMiddlewareOptions: HttpMiddlewareOptions,
+  ) {
+    const authMiddlewareOptions: AuthMiddlewareOptions = {
+      host: clientConfig.authUrl,
+      projectKey: clientConfig.projectKey,
+      credentials: {
+        clientId: clientConfig.clientId,
+        clientSecret: clientConfig.clientSecret,
+      },
+      // scopes: ['manage_project:' + clientConfig.projectKey],
+      fetch,
+      tokenCache: tokenCache,
+    };
+
+    return new ClientBuilder()
+      .withHttpMiddleware(httpMiddlewareOptions)
+      .withClientCredentialsFlow(authMiddlewareOptions);
+  }
 }

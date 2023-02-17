@@ -13,7 +13,7 @@ interface AddToWishlistRequest {
 export class WishlistApi extends BaseApi {
   getById = async (wishlistId: string) => {
     const locale = await this.getCommercetoolsLocal();
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .withId({ ID: wishlistId })
       .get({
@@ -32,7 +32,7 @@ export class WishlistApi extends BaseApi {
 
   getForAccount = async (accountId: string) => {
     const locale = await this.getCommercetoolsLocal();
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .get({
         queryArgs: {
@@ -53,7 +53,7 @@ export class WishlistApi extends BaseApi {
 
   getByIdForAccount = async (wishlistId: string, accountId: string) => {
     const locale = await this.getCommercetoolsLocal();
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .withId({ ID: wishlistId })
       .get({
@@ -64,7 +64,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -74,7 +74,7 @@ export class WishlistApi extends BaseApi {
   create = async (wishlist: Omit<Wishlist, 'wishlistId'>) => {
     const locale = await this.getCommercetoolsLocal();
     const body = WishlistMapper.wishlistToCommercetoolsShoppingListDraft(wishlist, locale);
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .post({
         body: body,
@@ -84,7 +84,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -94,7 +94,7 @@ export class WishlistApi extends BaseApi {
   addToWishlist = async (wishlist: Wishlist, request: AddToWishlistRequest) => {
     const locale = await this.getCommercetoolsLocal();
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .withId({ ID: wishlist.wishlistId })
       .post({
@@ -114,7 +114,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -124,7 +124,7 @@ export class WishlistApi extends BaseApi {
   removeLineItem = async (wishlist: Wishlist, lineItemId: string) => {
     const locale = await this.getCommercetoolsLocal();
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .withId({ ID: wishlist.wishlistId })
       .post({
@@ -143,7 +143,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
@@ -153,7 +153,7 @@ export class WishlistApi extends BaseApi {
   updateLineItemCount = async (wishlist: Wishlist, lineItemId: string, count: number) => {
     const locale = await this.getCommercetoolsLocal();
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .shoppingLists()
       .withId({ ID: wishlist.wishlistId })
       .post({
@@ -173,7 +173,7 @@ export class WishlistApi extends BaseApi {
       })
       .execute()
       .then((response) => {
-        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale,this.defaultLocale);
+        return WishlistMapper.commercetoolsShoppingListToWishlist(response.body, locale, this.defaultLocale);
       })
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });

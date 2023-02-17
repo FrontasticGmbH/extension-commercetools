@@ -406,8 +406,7 @@ export abstract class BaseApi {
   protected locale: string;
   protected defaultLocale: string;
   protected clientHashKey: string;
-  protected commercetoolsTokenCache: TokenCache;
-  public token: Token;
+  protected token: Token;
 
   constructor(frontasticContext: Context, locale: string | null) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
@@ -422,11 +421,9 @@ export abstract class BaseApi {
     this.categoryIdField = this.clientSettings?.categoryIdField || 'key';
 
     this.token = clientTokensStored.get(this.getClientHashKey());
-
-    this.commercetoolsTokenCache = this.buildCommercetoolsTokenCache();
   }
 
-  private buildCommercetoolsTokenCache(): TokenCache {
+  private commercetoolsTokenCache(): TokenCache {
     return (() => {
       const get = () => {
         if (this.token === undefined) {
@@ -468,11 +465,7 @@ export abstract class BaseApi {
     return this.clientHashKey;
   }
 
-  protected getApiForProject(): ByProjectKeyRequestBuilder {
-    return this.getApiRoot().withProjectKey({ projectKey: this.projectKey });
-  }
-
-  protected getApiRoot(): ApiRoot {
+  private getApiRoot(): ApiRoot {
     let refreshToken: string | undefined;
     if (this.apiRoot && tokenHasExpired(this.token)) {
       this.apiRoot = undefined;
@@ -486,13 +479,17 @@ export abstract class BaseApi {
     const client = ClientFactory.factor(
       this.clientSettings,
       this.environment,
-      this.commercetoolsTokenCache,
+      this.commercetoolsTokenCache(),
       refreshToken,
     );
 
     this.apiRoot = createApiBuilderFromCtpClient(client);
 
     return this.apiRoot;
+  }
+
+  protected requestBuilder(): ByProjectKeyRequestBuilder {
+    return this.getApiRoot().withProjectKey({ projectKey: this.projectKey });
   }
 
   protected async getCommercetoolsLocal(): Promise<Locale> {
@@ -537,7 +534,7 @@ export abstract class BaseApi {
       }
     }
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .productTypes()
       .get()
       .execute()
@@ -566,7 +563,7 @@ export abstract class BaseApi {
       }
     }
 
-    const response = await this.getApiForProject()
+    const response = await this.requestBuilder()
       .get()
       .execute()
       .catch((error) => {

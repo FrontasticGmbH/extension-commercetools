@@ -55,7 +55,7 @@ export class AccountApi extends BaseApi {
           : undefined,
     };
 
-    account = await this.getApiForProject()
+    account = await this.requestBuilder()
       .customers()
       .post({
         body: customerDraft,
@@ -93,7 +93,7 @@ export class AccountApi extends BaseApi {
   confirmEmail: (token: string) => Promise<Account> = async (token: string) => {
     const locale = await this.getCommercetoolsLocal();
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .customers()
       .emailConfirm()
       .post({
@@ -116,7 +116,7 @@ export class AccountApi extends BaseApi {
   ) => {
     const locale = await this.getCommercetoolsLocal();
 
-    account = await this.getApiForProject()
+    account = await this.requestBuilder()
       .login()
       .post({
         body: {
@@ -170,7 +170,7 @@ export class AccountApi extends BaseApi {
 
     const accountVersion = await this.fetchAccountVersion(account);
 
-    account = await this.getApiForProject()
+    account = await this.requestBuilder()
       .customers()
       .password()
       .post({
@@ -193,7 +193,7 @@ export class AccountApi extends BaseApi {
   };
 
   generatePasswordResetToken: (email: string) => Promise<AccountToken> = async (email: string) => {
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .customers()
       .passwordToken()
       .post({
@@ -221,7 +221,7 @@ export class AccountApi extends BaseApi {
   ) => {
     const locale = await this.getCommercetoolsLocal();
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .customers()
       .passwordReset()
       .post({
@@ -410,7 +410,7 @@ export class AccountApi extends BaseApi {
   }
 
   protected async fetchAccountVersion(account: Account): Promise<number | undefined> {
-    const commercetoolsAccount = await this.getApiForProject()
+    const commercetoolsAccount = await this.requestBuilder()
       .customers()
       .withId({ ID: account.accountId })
       .get()
@@ -429,7 +429,7 @@ export class AccountApi extends BaseApi {
       actions: customerUpdateActions,
     };
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .customers()
       .withId({ ID: account.accountId })
       .post({
@@ -445,7 +445,7 @@ export class AccountApi extends BaseApi {
   }
 
   protected async getConfirmationToken(account: Account): Promise<AccountToken> {
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .customers()
       .emailToken()
       .post({

@@ -118,7 +118,7 @@ export class ProductApi extends BaseApi {
       },
     };
 
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .productProjections()
       .search()
       .get(methodArgs)
@@ -130,7 +130,7 @@ export class ProductApi extends BaseApi {
             this.productIdField,
             this.categoryIdField,
             locale,
-            this.defaultLocale
+            this.defaultLocale,
           ),
         );
 
@@ -160,7 +160,7 @@ export class ProductApi extends BaseApi {
   getSearchableAttributes: () => Promise<FilterField[]> = async () => {
     const locale = await this.getCommercetoolsLocal();
 
-    const response = await this.getApiForProject()
+    const response = await this.requestBuilder()
       .productTypes()
       .get()
       .execute()
@@ -250,7 +250,7 @@ export class ProductApi extends BaseApi {
   };
 
   protected async getCommercetoolsCategoryPagedQueryResponse(methodArgs: object) {
-    return await this.getApiForProject()
+    return await this.requestBuilder()
       .categories()
       .get(methodArgs)
       .execute()
