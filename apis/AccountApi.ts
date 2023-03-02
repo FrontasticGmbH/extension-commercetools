@@ -1,5 +1,5 @@
 import { BaseApi } from './BaseApi';
-import { Account } from '../../../types/account/Account';
+import { Account } from '@Types/account/Account';
 import {
   CustomerDraft,
   CustomerUpdate,
@@ -7,13 +7,13 @@ import {
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/customer';
 import { AccountMapper } from '../mappers/AccontMapper';
 import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
-import { Cart } from '../../../types/cart/Cart';
+import { Cart } from '@Types/cart/Cart';
 import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
-import { Address } from '../../../types/account/Address';
+import { Address } from '@Types/account/Address';
 import { Guid } from '../utils/Guid';
 import { ExternalError, ValidationError } from '../utils/Errors';
 import { AccountEmailDuplicatedError } from '../errors/AccountEmailDuplicatedError';
-import { AccountToken } from '../../../types/account/AccountToken';
+import { AccountToken } from '@Types/account/AccountToken';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 
 export class AccountApi extends BaseApi {

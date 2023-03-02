@@ -1,20 +1,24 @@
-import { Wishlist } from '../../../types/wishlist/Wishlist';
+import { Wishlist } from '@Types/wishlist/Wishlist';
 import { ShoppingList, ShoppingListLineItem } from '@commercetools/platform-sdk';
 import { ShoppingListDraft } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/shopping-list';
 import { Locale } from '../Locale';
-import { LineItem } from '../../../types/wishlist/LineItem';
+import { LineItem } from '@Types/wishlist/LineItem';
 import { ProductRouter } from '../utils/ProductRouter';
 import { ProductMapper } from './ProductMapper';
-import LocalizedValue from "../utils/LocalizedValue";
+import LocalizedValue from '../utils/LocalizedValue';
 
 export class WishlistMapper {
-  static commercetoolsShoppingListToWishlist = (commercetoolsShoppingList: ShoppingList, locale: Locale, defaultLocale:string): Wishlist => {
+  static commercetoolsShoppingListToWishlist = (
+    commercetoolsShoppingList: ShoppingList,
+    locale: Locale,
+    defaultLocale: string,
+  ): Wishlist => {
     return {
       wishlistId: commercetoolsShoppingList.id,
       wishlistVersion: commercetoolsShoppingList.version.toString(),
       anonymousId: commercetoolsShoppingList.anonymousId,
       accountId: commercetoolsShoppingList.customer?.id ?? undefined,
-      name: LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsShoppingList.name),
+      name: LocalizedValue.getLocalizedValue(locale, defaultLocale, commercetoolsShoppingList.name),
       lineItems: (commercetoolsShoppingList.lineItems || []).map((lineItem) =>
         WishlistMapper.commercetoolsLineItemToLineItem(lineItem, locale, defaultLocale),
       ),
@@ -24,12 +28,12 @@ export class WishlistMapper {
   private static commercetoolsLineItemToLineItem = (
     commercetoolsLineItem: ShoppingListLineItem,
     locale: Locale,
-    defaultLocale:string
+    defaultLocale: string,
   ): LineItem => {
     const lineItem: LineItem = {
       lineItemId: commercetoolsLineItem.id,
       productId: commercetoolsLineItem.productId,
-      name:LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsLineItem.name),
+      name: LocalizedValue.getLocalizedValue(locale, defaultLocale, commercetoolsLineItem.name),
       type: 'variant',
       addedAt: new Date(commercetoolsLineItem.addedAt),
       count: commercetoolsLineItem.quantity,

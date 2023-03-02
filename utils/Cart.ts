@@ -1,4 +1,4 @@
-import { Cart } from '../../../types/cart/Cart';
+import { Cart } from '@Types/cart/Cart';
 
 export const hasUser = (cart: Cart): boolean => {
   return cart.email !== undefined;

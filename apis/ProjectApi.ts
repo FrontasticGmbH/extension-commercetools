@@ -1,5 +1,5 @@
 import { BaseApi } from './BaseApi';
-import { ProjectSettings } from '../../../types/ProjectSettings';
+import { ProjectSettings } from '@Types/ProjectSettings';
 
 export class ProjectApi extends BaseApi {
   getProjectSettings: () => Promise<ProjectSettings> = async () => {

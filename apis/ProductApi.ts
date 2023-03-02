@@ -1,15 +1,15 @@
-import { Result } from '../../../types/product/Result';
+import { Result } from '@Types/product/Result';
 import { ProductMapper } from '../mappers/ProductMapper';
-import { ProductQuery } from '../../../types/query/ProductQuery';
-import { Product } from '../../../types/product/Product';
+import { ProductQuery } from '@Types/query/ProductQuery';
+import { Product } from '@Types/product/Product';
 import { BaseApi } from './BaseApi';
-import { FilterField, FilterFieldTypes } from '../../../types/product/FilterField';
-import { FilterTypes } from '../../../types/query/Filter';
-import { TermFilter } from '../../../types/query/TermFilter';
-import { RangeFilter } from '../../../types/query/RangeFilter';
-import { CategoryQuery } from '../../../types/query/CategoryQuery';
-import { Category } from '../../../types/product/Category';
-import { FacetDefinition } from '../../../types/product/FacetDefinition';
+import { FilterField, FilterFieldTypes } from '@Types/product/FilterField';
+import { FilterTypes } from '@Types/query/Filter';
+import { TermFilter } from '@Types/query/TermFilter';
+import { RangeFilter } from '@Types/query/RangeFilter';
+import { CategoryQuery } from '@Types/query/CategoryQuery';
+import { Category } from '@Types/product/Category';
+import { FacetDefinition } from '@Types/product/FacetDefinition';
 import { ExternalError } from '../utils/Errors';
 
 export class ProductApi extends BaseApi {

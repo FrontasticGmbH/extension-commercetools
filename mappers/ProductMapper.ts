@@ -13,31 +13,31 @@ import {
   TypedMoney,
   Price as CommercetoolsPrice,
 } from '@commercetools/platform-sdk';
-import { Product } from '../../../types/product/Product';
-import { Variant } from '../../../types/product/Variant';
-import { Attributes } from '../../../types/product/Attributes';
-import { Category } from '../../../types/product/Category';
+import { Product } from '@Types/product/Product';
+import { Variant } from '@Types/product/Variant';
+import { Attributes } from '@Types/product/Attributes';
+import { Category } from '@Types/product/Category';
 import { ProductRouter } from '../utils/ProductRouter';
 import { Locale } from '../Locale';
-import { Money } from '../../../types/product/Money';
-import { FilterField, FilterFieldTypes, FilterFieldValue } from '../../../types/product/FilterField';
+import { Money } from '@Types/product/Money';
+import { FilterField, FilterFieldTypes, FilterFieldValue } from '@Types/product/FilterField';
 import {
   AttributeEnumType,
   AttributeLocalizedEnumType,
   AttributeSetType,
   AttributeType,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/product-type';
-import { Facet, FacetTypes } from '../../../types/result/Facet';
-import { TermFacet } from '../../../types/result/TermFacet';
-import { RangeFacet as ResultRangeFacet } from '../../../types/result/RangeFacet';
-import { Term } from '../../../types/result/Term';
-import { ProductQuery } from '../../../types/query/ProductQuery';
-import { TermFacet as QueryTermFacet } from '../../../types/query/TermFacet';
-import { RangeFacet as QueryRangeFacet } from '../../../types/query/RangeFacet';
-import { Facet as QueryFacet } from '../../../types/query/Facet';
-import { FacetDefinition } from '../../../types/product/FacetDefinition';
-import { FilterTypes } from '../../../types/query/Filter';
-import LocalizedValue from "../utils/LocalizedValue";
+import { Facet, FacetTypes } from '@Types/result/Facet';
+import { TermFacet } from '@Types/result/TermFacet';
+import { RangeFacet as ResultRangeFacet } from '@Types//result/RangeFacet';
+import { Term } from '@Types/result/Term';
+import { ProductQuery } from '@Types/query/ProductQuery';
+import { TermFacet as QueryTermFacet } from '@Types/query/TermFacet';
+import { RangeFacet as QueryRangeFacet } from '@Types/query/RangeFacet';
+import { Facet as QueryFacet } from '@Types/query/Facet';
+import { FacetDefinition } from '@Types/product/FacetDefinition';
+import { FilterTypes } from '@Types/query/Filter';
+import LocalizedValue from '../utils/LocalizedValue';
 
 const TypeMap = new Map<string, string>([
   ['boolean', FilterFieldTypes.BOOLEAN],
@@ -55,21 +55,20 @@ export class ProductMapper {
     productIdField: string,
     categoryIdField: string,
     locale: Locale,
-    defaultLocale: string
+    defaultLocale: string,
   ) => Product = (
     commercetoolsProduct: CommercetoolsProductProjection,
     productIdField: string,
     categoryIdField: string,
     locale: Locale,
-    defaultLocale: string
+    defaultLocale: string,
   ) => {
-
     const product: Product = {
       productId: commercetoolsProduct?.[productIdField],
       version: commercetoolsProduct?.version?.toString(),
-      name:  LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.name),
-      slug: LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.slug),
-      description:  LocalizedValue.getLocalizedValue(locale, defaultLocale,commercetoolsProduct?.description),
+      name: LocalizedValue.getLocalizedValue(locale, defaultLocale, commercetoolsProduct?.name),
+      slug: LocalizedValue.getLocalizedValue(locale, defaultLocale, commercetoolsProduct?.slug),
+      description: LocalizedValue.getLocalizedValue(locale, defaultLocale, commercetoolsProduct?.description),
       categories: ProductMapper.commercetoolsCategoryReferencesToCategories(
         commercetoolsProduct.categories,
         categoryIdField,

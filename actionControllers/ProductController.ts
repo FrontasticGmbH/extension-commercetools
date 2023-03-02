@@ -2,8 +2,8 @@ import { Request, Response } from '@frontastic/extension-types';
 import { ProductApi } from '../apis/ProductApi';
 import { ActionContext } from '@frontastic/extension-types';
 import { ProductQueryFactory } from '../utils/ProductQueryFactory';
-import { ProductQuery } from '../../../types/query/ProductQuery';
-import { CategoryQuery } from '../../../types/query/CategoryQuery';
+import { ProductQuery } from '@Types/query/ProductQuery';
+import { CategoryQuery } from '@Types/query/CategoryQuery';
 import { getLocale } from '../utils/Request';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
