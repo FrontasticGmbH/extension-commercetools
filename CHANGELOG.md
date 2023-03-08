@@ -1,4 +1,10 @@
 
+## Version 1.4.0 (2023-03-08)
+
+** New Features and Improvements **
+- Upgrade CoCo library
+- Get types from alias
+
 ## Version 1.3.0 (2023-02-15)
 
 ** New Features and Improvements **
