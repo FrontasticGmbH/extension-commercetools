@@ -4,7 +4,7 @@ import {
   Category as CommercetoolsCategory,
   CategoryReference,
   FacetResults as CommercetoolsFacetResults,
-  _Money as CommercetoolsMoney,
+  Money as CommercetoolsMoney,
   ProductProjection as CommercetoolsProductProjection,
   ProductType as CommercetoolsProductType,
   ProductVariant as CommercetoolsProductVariant,
