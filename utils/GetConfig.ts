@@ -1,18 +1,17 @@
-import { Project } from '@frontastic/extension-types';
+import { Context } from '@frontastic/extension-types';
 import { ClientConfig } from '../interfaces/ClientConfig';
+import { getFromProjectConfig } from './Context';
 
-export const getConfig = (project: Project, engine: string, locale: string | null): ClientConfig => {
-  if (!project.configuration[engine]) {
-    throw `Configuration details are not available for ${engine}`;
-  }
+export const getConfig = (context: Context, engine: string, locale: string | null): ClientConfig => {
+  const prefix = `EXTENSION_${engine}`;
 
   return {
-    authUrl: project.configuration?.[engine].authUrl,
-    clientId: project.configuration?.[engine].clientId,
-    clientSecret: project.configuration?.[engine].clientSecret,
-    hostUrl: project.configuration?.[engine].hostUrl,
-    projectKey: project.configuration?.[engine].projectKey,
-    productIdField: project.configuration?.[engine]?.productIdField,
-    categoryIdField: project.configuration?.[engine]?.categoryIdField,
+    authUrl: getFromProjectConfig(`${prefix}_AUTH_URL`, context),
+    clientId: getFromProjectConfig(`${prefix}_CLIENT_ID`, context),
+    clientSecret: getFromProjectConfig(`${prefix}_CLIENT_SECRET`, context),
+    hostUrl: getFromProjectConfig(`${prefix}_HOST_URL`, context),
+    projectKey: getFromProjectConfig(`${prefix}_PROJECT_KEY`, context),
+    productIdField: getFromProjectConfig(`${prefix}_PRODUCT_ID_FIELD`, context),
+    categoryIdField: getFromProjectConfig(`${prefix}_CATEGORY_ID_FIELD`, context),
   } as ClientConfig;
 };
