@@ -1,0 +1,69 @@
+{
+  "schema": [
+    {
+      "name": "commercetools Composable Commerce extension",
+      "fields": [
+        {
+          "label": "Project Key",
+          "field": "EXTENSION_COMMERCETOOLS_PROJECT_KEY",
+          "type": "string",
+          "translatable": false,
+          "required": true
+        },
+        {
+          "label": "Client ID",
+          "field": "EXTENSION_COMMERCETOOLS_CLIENT_ID",
+          "type": "encrypted",
+          "translatable": false,
+          "required": true
+        },
+        {
+          "label": "Client Secret",
+          "field": "EXTENSION_COMMERCETOOLS_CLIENT_SECRET",
+          "type": "encrypted",
+          "translatable": false,
+          "required": true
+        },
+        {
+          "label": "Locale overwrite",
+          "field": "EXTENSION_COMMERCETOOLS_LOCALE_OVERWRITE",
+          "type": "string",
+          "translatable": false,
+          "required": false
+        },
+        {
+          "label": "Authentication URL",
+          "field": "EXTENSION_COMMERCETOOLS_AUTH_URL",
+          "type": "string",
+          "translatable": false,
+          "required": false,
+          "default": "https://auth.sphere.io"
+        },
+        {
+          "label": "API URL",
+          "field": "EXTENSION_COMMERCETOOLS_HOST_URL",
+          "type": "string",
+          "translatable": false,
+          "required": false,
+          "default": "https://api.sphere.io"
+        },
+        {
+          "label": "Product ID field",
+          "field": "EXTENSION_COMMERCETOOLS_PRODUCT_ID_FIELD",
+          "type": "string",
+          "translatable": false,
+          "required": false,
+          "default": "id"
+        },
+        {
+          "label": "Category ID field",
+          "field": "EXTENSION_COMMERCETOOLS_CATEGORY_ID_FIELD",
+          "type": "string",
+          "translatable": false,
+          "required": false,
+          "default": "id"
+        }
+      ]
+    }
+  ]
+}
