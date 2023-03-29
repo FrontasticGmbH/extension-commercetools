@@ -7,8 +7,12 @@ import { Context } from '@frontastic/extension-types';
  */
 const projectConfigurationOverrides = {};
 
+const isDevEnv = (context: Context) => {
+  return context.environment === 'development' || context.environment === 'dev';
+};
+
 export const getFromProjectConfig = (key: string, context: Context) => {
-  if (context.environment === 'development' && projectConfigurationOverrides[key]) {
+  if (isDevEnv(context) && projectConfigurationOverrides[key]) {
     return projectConfigurationOverrides[key];
   }
 
