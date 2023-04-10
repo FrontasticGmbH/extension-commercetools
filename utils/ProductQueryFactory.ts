@@ -16,11 +16,13 @@ export class ProductQueryFactory {
     let queryParams;
     const filters: Filter[] = [];
     const productQuery: ProductQuery = {
+      categories: [],
       productIds: [],
       skus: [],
     };
 
-    // Selected ID/SKUs filter from the studio
+    // Selected categories and products ID/SKUs filter from the studio
+    const categories = config?.configuration?.categories?.split(',').map((val: string) => val.trim());
     const productIds = config?.configuration?.productIds?.split(',').map((val: string) => val.trim());
     const productSkus = config?.configuration?.productSkus?.split(',').map((val: string) => val.trim());
 
@@ -38,9 +40,10 @@ export class ProductQueryFactory {
       };
     }
 
-    // Add SKUs and IDs if they are there
-    if (productSkus && productSkus.length > 0) queryParams.skus = productSkus;
+    // Add categories and product SKUs and IDs if they are there
+    if (categories && categories.length > 0) categories.productIds = categories;
     if (productIds && productIds.length > 0) queryParams.productIds = productIds;
+    if (productSkus && productSkus.length > 0) queryParams.skus = productSkus;
 
     /**
      * Map query
@@ -48,11 +51,15 @@ export class ProductQueryFactory {
     productQuery.query = queryParams?.query || undefined;
 
     /**
-     * Map Category
+     * Map Categories
      *
-     * Category could be overwritten by category configuration from Frontastic Studio
+     * Categories could be overwritten by categories configuration from Frontastic Studio
      */
-    productQuery.category = queryParams?.category || undefined;
+    if (queryParams?.categories && Array.isArray(queryParams?.categories)) {
+      queryParams.categories.map((category: string | number) => {
+        productQuery.categories.push(category.toString());
+      });
+    }
 
     /**
      * Map productIds
@@ -103,9 +110,9 @@ export class ProductQueryFactory {
 
     if (configFiltersData instanceof Array) {
       for ([key, configFilterData] of Object.entries(configFiltersData)) {
-        if (configFilterData?.field === 'categoryId') {
+        if (configFilterData?.field === 'categoryId' || configFilterData?.field === 'categoryIds') {
           // Overwrite category with any value that has been set from Frontastic Studio
-          productQuery.category = configFilterData.values[0]; // TODO: should change if category is a single value
+          productQuery.categories = configFilterData.values;
           continue;
         }
 

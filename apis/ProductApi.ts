@@ -47,25 +47,32 @@ export class ProductApi extends BaseApi {
       filterQuery.push(`variants.sku:"${productQuery.skus.join('","')}"`);
     }
 
-    if (productQuery.category !== undefined && productQuery.category !== '') {
-      let categoryId = productQuery.category;
+    if (productQuery.categories !== undefined && productQuery.categories.length !== 0) {
+      let categoryIds = productQuery.categories.filter(function uniqueCategories(value, index, self) {
+        return self.indexOf(value) === index;
+      });
 
       // commercetools only allows filter categories by id. If we are using something different as categoryIdField,
       // we need first to fetch the category to get the correspondent category id.
       if (this.categoryIdField !== 'id') {
         const categoriesMethodArgs = {
           queryArgs: {
-            limit: 1,
-            where: [`key="${categoryId}"`],
+            where: [`key in ("${categoryIds.join('","')}")`],
           },
         };
 
-        categoryId = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then((response) => {
-          return response.body.results[0].id;
+        categoryIds = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then((response) => {
+          return response.body.results.map((category) => {
+            return category.id;
+          });
         });
       }
 
-      filterQuery.push(`categories.id:subtree("${categoryId}")`);
+      filterQuery.push(
+        `categories.id: ${categoryIds.map((category) => {
+          return `subtree("${category}")`;
+        })}`,
+      );
     }
 
     if (productQuery.filters !== undefined) {

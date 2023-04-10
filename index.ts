@@ -119,7 +119,7 @@ export default {
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
       const queryWithCategoryId = {
         ...productQuery,
-        category: (
+        categories: (
           context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any
         )?.preloadedValue?.product?.categories?.[0]?.categoryId,
       };
