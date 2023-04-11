@@ -117,14 +117,15 @@ export default {
 
       const productApi = new ProductApi(context.frontasticContext, locale);
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
-      const queryWithCategoryId = {
+      const query = {
         ...productQuery,
-        categories: (
-          context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any
-        )?.preloadedValue?.product?.categories?.[0]?.categoryId,
+        categories: [
+          (context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any)
+            ?.preloadedValue?.product?.categories?.[0]?.categoryId,
+        ],
       };
 
-      return await productApi.query(queryWithCategoryId).then((queryResult) => {
+      return await productApi.query(query).then((queryResult) => {
         return {
           dataSourcePayload: queryResult,
         };
