@@ -41,7 +41,7 @@ export class ProductQueryFactory {
     }
 
     // Add categories and product SKUs and IDs if they are there
-    if (categories && categories.length > 0) categories.productIds = categories;
+    if (categories && categories.length > 0) queryParams.categories = categories;
     if (productIds && productIds.length > 0) queryParams.productIds = productIds;
     if (productSkus && productSkus.length > 0) queryParams.skus = productSkus;
 
@@ -59,6 +59,10 @@ export class ProductQueryFactory {
       queryParams.categories.map((category: string | number) => {
         productQuery.categories.push(category.toString());
       });
+    }
+    // Support also queries with a single category
+    if (queryParams?.category) {
+      productQuery.categories.push(queryParams.category);
     }
 
     /**
