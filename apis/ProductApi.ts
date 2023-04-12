@@ -103,10 +103,17 @@ export class ProductApi extends BaseApi {
       filterFacets.push(...ProductMapper.facetDefinitionsToFilterFacets(productQuery.facets, facetDefinitions, locale));
     }
 
-    if (productQuery.sortAttributes !== undefined) {
-      Object.keys(productQuery.sortAttributes).map((field, directionIndex) => {
-        sortAttributes.push(`${field} ${Object.values(productQuery.sortAttributes)[directionIndex]}`);
-      });
+    switch (true) {
+      case productQuery.sortAttributes !== undefined:
+        Object.keys(productQuery.sortAttributes).map((field, directionIndex) => {
+          sortAttributes.push(`${field} ${Object.values(productQuery.sortAttributes)[directionIndex]}`);
+        });
+        break;
+      default:
+        // By default, in CoCo, search results are sorted descending by their relevancy with respect to the provided
+        // text (that is their “score”). Sorting by score and then by id will ensure consistent products order
+        // across several search requests for products that have the same relevance score.
+        sortAttributes.push(`score desc`, `id desc`);
     }
 
     const methodArgs = {
