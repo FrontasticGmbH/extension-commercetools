@@ -451,15 +451,26 @@ export class ProductMapper {
         case 'text':
         case 'reference':
         default:
-          if (queryFacet.type === FilterTypes.TERM || queryFacet.type === FilterTypes.BOOLEAN) {
+          if (queryFacet.type === FilterTypes.TERM) {
             filterFacets.push(`${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`);
-          } else {
-            filterFacets.push(
-              `${queryFacet.identifier}:range (${(queryFacet as QueryRangeFacet).min} to ${
-                (queryFacet as QueryRangeFacet).max
-              })`,
-            );
+            break;
           }
+
+          if (queryFacet.type === FilterTypes.BOOLEAN) {
+            filterFacets.push(
+              `${queryFacet.identifier}:"${
+                (queryFacet as QueryTermFacet).terms[0] === ('T' || 'true') ? 'true' : 'false'
+              }"`,
+            );
+            break;
+          }
+
+          filterFacets.push(
+            `${queryFacet.identifier}:range (${(queryFacet as QueryRangeFacet).min} to ${
+              (queryFacet as QueryRangeFacet).max
+            })`,
+          );
+
           break;
       }
     });
@@ -543,7 +554,7 @@ export class ProductMapper {
     facetQuery: QueryTermFacet | undefined,
   ) {
     const termFacet: TermFacet = {
-      type: FacetTypes.TERM,
+      type: facetResult.dataType === 'boolean' ? FacetTypes.BOOLEAN : FacetTypes.TERM,
       identifier: facetKey,
       label: facetKey,
       key: facetKey,

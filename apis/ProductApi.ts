@@ -35,6 +35,10 @@ export class ProductApi extends BaseApi {
         attributeId: 'variants.price',
         attributeType: 'money',
       },
+      {
+        attributeId: 'variants.scopedPriceDiscounted',
+        attributeType: 'boolean',
+      },
     ];
 
     const queryArgFacets = ProductMapper.facetDefinitionsToCommercetoolsQueryArgFacets(facetDefinitions, locale);
