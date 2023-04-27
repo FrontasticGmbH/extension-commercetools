@@ -22,7 +22,6 @@ import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
-import { DataSourcePreviewPayloadElement } from '@frontastic/extension-types/src/ts';
 
 export default {
   'dynamic-page-handler': async (
@@ -103,12 +102,6 @@ export default {
       return await productApi.query(productQuery).then((queryResult) => {
         return {
           dataSourcePayload: queryResult,
-          previewPayload: (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
-            return {
-              title: product.name,
-              image: product?.variants[0]?.images[0],
-            };
-          }),
         };
       });
     },
@@ -135,12 +128,6 @@ export default {
       return await productApi.query(query).then((queryResult) => {
         return {
           dataSourcePayload: queryResult,
-          previewPayload: (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
-            return {
-              title: product.name,
-              image: product?.variants[0]?.images[0],
-            };
-          }),
         };
       });
     },
@@ -156,12 +143,6 @@ export default {
         return {
           dataSourcePayload: {
             product: queryResult,
-            previewPayload: [
-              {
-                title: queryResult.name,
-                image: queryResult?.variants[0]?.images[0],
-              },
-            ],
           },
         };
       });
@@ -170,7 +151,6 @@ export default {
     'frontastic/empty': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       return {
         dataSourcePayload: {},
-        previewPayload: [],
       };
     },
   },
