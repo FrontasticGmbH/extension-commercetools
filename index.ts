@@ -24,6 +24,15 @@ import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
 
+const getPreviewPayload =(queryResult: Result)=> {
+  return (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
+    return {
+      title: product.name,
+      image: product?.variants[0]?.images[0],
+    }
+  })
+}
+
 export default {
   'dynamic-page-handler': async (
     request: Request,
@@ -102,20 +111,10 @@ export default {
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
       return await productApi.query(productQuery).then((queryResult) => {
 
-        if (!context.isPreview) {
-          return {
-            dataSourcePayload: queryResult,
-          }
-        }
-
-        return {
+        return !context.isPreview ? { dataSourcePayload: queryResult } :
+          {
           dataSourcePayload: queryResult,
-          previewPayload: (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
-            return {
-              title: product.name,
-              image: product?.variants[0]?.images[0],
-            }
-          }),
+          previewPayload: getPreviewPayload(queryResult)
         }
       });
     },
@@ -140,19 +139,10 @@ export default {
       };
 
       return await productApi.query(query).then((queryResult) => {
-        if (!context.isPreview) {
-          return {
-            dataSourcePayload: queryResult,
-          }
-        }
-        return {
+
+        return !context.isPreview ? { dataSourcePayload: queryResult }: {
           dataSourcePayload: queryResult,
-          previewPayload: (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
-            return {
-              title: product.name,
-              image: product?.variants[0]?.images[0],
-            }
-          }),
+          previewPayload: getPreviewPayload(queryResult)
         };
       });
     },
@@ -165,18 +155,12 @@ export default {
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
       return await productApi.getProduct(productQuery).then((queryResult) => {
-        if (!context.isPreview) {
-          return {
-            dataSourcePayload: {
-              product: queryResult,
-            },
-          }
-        }
 
-        return {
-          dataSourcePayload: {
-            product: queryResult,
-          },
+
+        const payLoadResult = { dataSourcePayload: { product: queryResult} }
+
+        return !context.isPreview ? payLoadResult :  {
+          payLoadResult,
           previewPayload: [
             {
               title: queryResult.name,
@@ -189,16 +173,11 @@ export default {
 
     'frontastic/empty': async (config: DataSourceConfiguration, context: DataSourceContext) => {
 
-      if (!context.isPreview) {
-        return {
-          dataSourcePayload: {},
-        }
-      }
-
-      return {
+      return !context.isPreview ? { dataSourcePayload: {} } : {
         dataSourcePayload: {},
         previewPayload: [],
       };
+
     },
   },
   actions: {
