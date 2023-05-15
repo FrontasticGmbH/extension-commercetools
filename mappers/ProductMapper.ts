@@ -458,9 +458,7 @@ export class ProductMapper {
 
           if (queryFacet.type === FilterTypes.BOOLEAN) {
             filterFacets.push(
-              `${queryFacet.identifier}:"${
-                (queryFacet as QueryTermFacet).terms[0] === ('T' || 'true') ? 'true' : 'false'
-              }"`,
+              `${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms[0] === 'T' ? 'true' : 'false'}"`,
             );
             break;
           }
