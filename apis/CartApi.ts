@@ -41,6 +41,27 @@ import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 
 export class CartApi extends BaseApi {
+  replicateCart: (orderId: string) => Promise<Cart> = async (orderId: string) => {
+    try {
+      const locale = await this.getCommercetoolsLocal();
+      const response = await this.requestBuilder()
+        .carts()
+        .replicate()
+        .post({
+          body: {
+            reference: {
+              id: orderId,
+              typeId: 'order',
+            },
+          },
+        })
+        .execute();
+      return (await this.buildCartWithAvailableShippingMethods(response.body, locale)) as Cart;
+    } catch (e) {
+      throw `cannot replicate ${e}`;
+    }
+  };
+
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
     const locale = await this.getCommercetoolsLocal();
 

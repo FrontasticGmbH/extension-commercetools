@@ -96,6 +96,36 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
   return response;
 };
 
+export const replicateCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const cartApi = getCartApi(request, actionContext);
+  const orderId = request.query?.['orderId'];
+  try {
+    if (orderId) {
+      const cart = await cartApi.replicateCart(orderId);
+      const order = await cartApi.order(cart);
+      const response: Response = {
+        statusCode: 200,
+        body: JSON.stringify(order),
+        sessionData: {
+          ...request.sessionData,
+        },
+      };
+      return response;
+    }
+    throw new Error('Order not found');
+  } catch (e) {
+    const response: Response = {
+      statusCode: 400,
+      sessionData: request.sessionData,
+      // @ts-ignore
+      error: e?.message,
+      errorCode: 500,
+    };
+
+    return response;
+  }
+};
+
 export const updateLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
 
