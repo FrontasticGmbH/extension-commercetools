@@ -1,17 +1,16 @@
-import { Request, Response } from '@frontastic/extension-types';
-import { ActionContext } from '@frontastic/extension-types';
-import { Cart } from '@Types/cart/Cart';
-import { LineItem } from '@Types/cart/LineItem';
-import { Address } from '@Types/account/Address';
-import { CartFetcher } from '../utils/CartFetcher';
-import { ShippingMethod } from '@Types/cart/ShippingMethod';
-import { Payment, PaymentStatuses } from '@Types/cart/Payment';
-import { CartApi } from '../apis/CartApi';
-import { getLocale } from '../utils/Request';
-import { Discount } from '@Types/cart/Discount';
-import { EmailApiFactory } from '../utils/EmailApiFactory';
-import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
-import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
+import {ActionContext, Request, Response} from '@frontastic/extension-types';
+import {Cart} from '@Types/cart/Cart';
+import {LineItem} from '@Types/cart/LineItem';
+import {Address} from '@Types/account/Address';
+import {CartFetcher} from '../utils/CartFetcher';
+import {ShippingMethod} from '@Types/cart/ShippingMethod';
+import {Payment, PaymentStatuses} from '@Types/cart/Payment';
+import {CartApi} from '../apis/CartApi';
+import {getLocale} from '../utils/Request';
+import {Discount} from '@Types/cart/Discount';
+import {EmailApiFactory} from '../utils/EmailApiFactory';
+import {AccountAuthenticationError} from '../errors/AccountAuthenticationError';
+import {CartRedeemDiscountCodeError} from '../errors/CartRedeemDiscountCodeError';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -99,31 +98,42 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
 export const replicateCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
   const orderId = request.query?.['orderId'];
-  try {
-    if (orderId) {
-      const cart = await cartApi.replicateCart(orderId);
-      const order = await cartApi.order(cart);
-      const response: Response = {
-        statusCode: 200,
-        body: JSON.stringify(order),
-        sessionData: {
-          ...request.sessionData,
-        },
-      };
-      return response;
-    }
-    throw new Error('Order not found: ' + orderId);
-  } catch (e) {
+
+  if (!orderId) {
     const response: Response = {
       statusCode: 400,
-      sessionData: request.sessionData,
-      // @ts-ignore
-      error: e?.message,
-      errorCode: 500,
+      body: JSON.stringify(`Order : "${orderId}" was not found.`),
+      sessionData: {
+        ...request.sessionData
+      },
     };
-
-    return response;
+    return response
   }
+
+  const cart = await cartApi.replicateCart(orderId);
+  if (!cart) {
+    const response: Response = {
+      statusCode: 400,
+      body: JSON.stringify(`We could not replicate cart for order : "${orderId}".`),
+      sessionData: {
+        ...request.sessionData,
+        orderId
+      },
+    };
+    return response
+  }
+  const order = await cartApi.order(cart);
+  const response: Response = {
+    statusCode: 200,
+    body: JSON.stringify(cart),
+    sessionData: {
+      ...request.sessionData,
+      cart,
+      order
+    },
+  };
+  return response;
+
 };
 
 export const updateLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {
@@ -210,7 +220,7 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
   const order = await cartApi.order(cart);
 
-  emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
+  emailApi.sendOrderConfirmationEmail({...order, email: order.email || cart.email});
 
   // Unset the cartId
   const cartId: string = undefined;
@@ -233,7 +243,7 @@ export const getOrders: ActionHook = async (request: Request, actionContext: Act
   const account = request.sessionData?.account !== undefined ? request.sessionData.account : undefined;
 
   if (account === undefined) {
-    throw new AccountAuthenticationError({ message: 'Not logged in.' });
+    throw new AccountAuthenticationError({message: 'Not logged in.'});
   }
 
   const orders = await cartApi.getOrders(account);
