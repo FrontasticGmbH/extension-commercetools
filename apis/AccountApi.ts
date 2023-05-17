@@ -5,7 +5,7 @@ import {
   CustomerUpdate,
   CustomerUpdateAction,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/customer';
-import { AccountMapper } from '../mappers/AccontMapper';
+import { AccountMapper } from '../mappers/AccountMapper';
 import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
 import { Cart } from '@Types/cart/Cart';
 import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
