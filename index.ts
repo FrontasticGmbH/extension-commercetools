@@ -3,7 +3,7 @@ import * as ProductActions from './actionControllers/ProductController';
 import * as CartActions from './actionControllers/CartController';
 import * as WishlistActions from './actionControllers/WishlistController';
 import * as ProjectActions from './actionControllers/ProjectController';
-import { DataSourcePreviewPayloadElement } from '@frontastic/extension-types/src/ts'
+import { DataSourcePreviewPayloadElement } from '@frontastic/extension-types/src/ts';
 
 import {
   DataSourceConfiguration,
@@ -24,14 +24,14 @@ import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
 
-const getPreviewPayload =(queryResult: Result)=> {
+const getPreviewPayload = (queryResult: Result) => {
   return (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
     return {
       title: product.name,
       image: product?.variants[0]?.images[0],
-    }
-  })
-}
+    };
+  });
+};
 
 export default {
   'dynamic-page-handler': async (
@@ -110,12 +110,12 @@ export default {
       const productApi = new ProductApi(context.frontasticContext, locale);
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
       return await productApi.query(productQuery).then((queryResult) => {
-
-        return !context.isPreview ? { dataSourcePayload: queryResult } :
-          {
-          dataSourcePayload: queryResult,
-          previewPayload: getPreviewPayload(queryResult)
-        }
+        return !context.isPreview
+          ? { dataSourcePayload: queryResult }
+          : {
+              dataSourcePayload: queryResult,
+              previewPayload: getPreviewPayload(queryResult),
+            };
       });
     },
 
@@ -139,11 +139,12 @@ export default {
       };
 
       return await productApi.query(query).then((queryResult) => {
-
-        return !context.isPreview ? { dataSourcePayload: queryResult }: {
-          dataSourcePayload: queryResult,
-          previewPayload: getPreviewPayload(queryResult)
-        };
+        return !context.isPreview
+          ? { dataSourcePayload: queryResult }
+          : {
+              dataSourcePayload: queryResult,
+              previewPayload: getPreviewPayload(queryResult),
+            };
       });
     },
 
@@ -155,29 +156,29 @@ export default {
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
       return await productApi.getProduct(productQuery).then((queryResult) => {
+        const payLoadResult = { dataSourcePayload: { product: queryResult } };
 
-
-        const payLoadResult = { dataSourcePayload: { product: queryResult} }
-
-        return !context.isPreview ? payLoadResult :  {
-          payLoadResult,
-          previewPayload: [
-            {
-              title: queryResult.name,
-              image: queryResult?.variants[0]?.images[0],
-            },
-          ],
-        };
+        return !context.isPreview
+          ? payLoadResult
+          : {
+              payLoadResult,
+              previewPayload: [
+                {
+                  title: queryResult.name,
+                  image: queryResult?.variants[0]?.images[0],
+                },
+              ],
+            };
       });
     },
 
     'frontastic/empty': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-
-      return !context.isPreview ? { dataSourcePayload: {} } : {
-        dataSourcePayload: {},
-        previewPayload: [],
-      };
-
+      return !context.isPreview
+        ? { dataSourcePayload: {} }
+        : {
+            dataSourcePayload: {},
+            previewPayload: [],
+          };
     },
   },
   actions: {

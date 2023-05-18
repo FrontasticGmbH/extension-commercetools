@@ -1,12 +1,10 @@
-import { Locale } from "../Locale";
-import { LocalizedString } from "@commercetools/platform-sdk/dist/declarations/src/generated/models/common";
-
+import { Locale } from '../Locale';
+import { LocalizedString } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
 
 export default class LocalizedValue {
-  static getLocalizedValue = ( locale: Locale, defaultLocale: string, productValue?: LocalizedString,): string => {
-
+  static getLocalizedValue = (locale: Locale, defaultLocale: string, productValue?: LocalizedString): string => {
     if (!productValue) {
-      return ""
+      return '';
     }
     if (productValue[locale.language]) {
       return productValue[locale.language];
@@ -19,7 +17,5 @@ export default class LocalizedValue {
     }
 
     return productValue[0];
-  }
+  };
 }
-
-
