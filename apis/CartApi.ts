@@ -59,7 +59,7 @@ export class CartApi extends BaseApi {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
-    return (await this.buildCartWithAvailableShippingMethods(response.body, locale)) as Cart;
+    return await this.buildCartWithAvailableShippingMethods(response.body, locale);
   };
 
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
