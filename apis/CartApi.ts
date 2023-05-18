@@ -1,5 +1,4 @@
 import { Cart } from '@Types/cart/Cart';
-
 import {
   Cart as CommercetoolsCart,
   CartAddPaymentAction,
