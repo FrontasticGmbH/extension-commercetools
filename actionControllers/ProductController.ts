@@ -4,12 +4,12 @@ import { ActionContext } from '@frontastic/extension-types';
 import { ProductQueryFactory } from '../utils/ProductQueryFactory';
 import { ProductQuery } from '@Types/query/ProductQuery';
 import { CategoryQuery } from '@Types/query/CategoryQuery';
-import { getLocale } from '../utils/Request';
+import { getCurrency, getLocale } from '../utils/Request';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getProductApi(request: Request, actionContext: ActionContext) {
-  return new ProductApi(actionContext.frontasticContext, getLocale(request));
+  return new ProductApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
 }
 
 export const getProduct: ActionHook = async (request: Request, actionContext: ActionContext) => {

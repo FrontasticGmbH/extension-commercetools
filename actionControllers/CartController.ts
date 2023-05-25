@@ -6,7 +6,7 @@ import { CartFetcher } from '../utils/CartFetcher';
 import { ShippingMethod } from '@Types/cart/ShippingMethod';
 import { Payment, PaymentStatuses } from '@Types/cart/Payment';
 import { CartApi } from '../apis/CartApi';
-import { getLocale } from '../utils/Request';
+import { getCurrency, getLocale } from '../utils/Request';
 import { Discount } from '@Types/cart/Discount';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
@@ -16,7 +16,7 @@ import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getCartApi(request: Request, actionContext: ActionContext) {
-  return new CartApi(actionContext.frontasticContext, getLocale(request));
+  return new CartApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
 }
 
 async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
