@@ -14,7 +14,7 @@ import {
   ExtensionRegistry,
   Request,
 } from '@frontastic/extension-types';
-import { getLocale, getPath } from './utils/Request';
+import { getCurrency, getLocale, getPath } from './utils/Request';
 import { ProductRouter } from './utils/ProductRouter';
 import { Product } from '@Types/product/Product';
 import { SearchRouter } from './utils/SearchRouter';
@@ -106,8 +106,9 @@ export default {
   'data-sources': {
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
       return await productApi.query(productQuery).then((queryResult) => {
         return !context.isPreview
@@ -127,8 +128,9 @@ export default {
       }
 
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
       const query = {
         ...productQuery,
@@ -150,8 +152,9 @@ export default {
 
     'frontastic/product': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
 
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
