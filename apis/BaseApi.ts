@@ -314,11 +314,10 @@ const parseLocale = (locale: string): ParsedLocale => {
   }
 
   if (currency === undefined) {
+    currency = defaultCurrency;
     if (territory in territoryToCurrency) {
       currency = territoryToCurrency[territory];
     }
-  } else {
-    currency = defaultCurrency;
   }
 
   return {
@@ -408,6 +407,7 @@ export abstract class BaseApi {
   protected categoryIdField: string;
   protected locale: string;
   protected defaultLocale: string;
+  protected defaultCurrency: string;
   protected clientHashKey: string;
   protected token: Token;
   protected currency: string;
@@ -415,7 +415,10 @@ export abstract class BaseApi {
   constructor(frontasticContext: Context, locale: string | null, currency: string | null) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
     this.locale = locale !== null ? locale : this.defaultLocale;
-    this.currency = currency;
+
+    this.defaultCurrency = defaultCurrency;
+    this.currency = currency !== null ? currency : this.defaultCurrency;
+
     const engine = 'commercetools';
     this.clientSettings = getConfig(frontasticContext.project, engine, this.locale);
 
@@ -516,13 +519,9 @@ export abstract class BaseApi {
       pickCommercetoolsCountry(parsedLocale, language, project.countries) ??
       pickCommercetoolsCountry(parsedDefaultLocale, language, project.countries) ??
       project.countries[0];
-    const currencyFromLocale =
-      pickCommercetoolsCurrency(parsedLocale, project.currencies, null) ??
-      pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies, null);
-    const currencyFromParam = this.currency;
-    const currency = currencyFromParam
-      ? pickCommercetoolsCurrency(null, project.currencies, currencyFromParam)
-      : currencyFromLocale;
+    const currency =
+      pickCommercetoolsCurrency(parsedLocale, project.currencies, this.currency) ??
+      pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies, this.defaultCurrency);
     return Promise.resolve({
       language,
       country,

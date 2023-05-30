@@ -18,10 +18,10 @@ export const getLocale = (request: Request): string | null => {
 
 export const getCurrency = (request: Request): string | null => {
   if (request !== undefined) {
-    const currency = getHeader(request, 'frontastic-ct-currency') ?? request.query['ct-currency'];
+    const currency = getHeader(request, 'frontastic-currency') ?? request.query['currency'];
 
     if (currency !== undefined) {
-      return getHeader(request, 'frontastic-ct-currency') ?? request.query['ct-currency'];
+      return getHeader(request, 'frontastic-currency') ?? request.query['currency'];
     }
   }
 
