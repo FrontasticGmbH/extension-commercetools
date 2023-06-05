@@ -352,6 +352,7 @@ export class ProductMapper {
         const facetDefinition: FacetDefinition = {
           attributeType: attribute.type.name,
           attributeId: `variants.attributes.${attribute.name}`,
+          attributeLabel: attribute.name,
         };
 
         if (facetDefinition.attributeId) facetDefinitionsIndex[facetDefinition.attributeId] = facetDefinition;
@@ -477,19 +478,28 @@ export class ProductMapper {
   }
 
   static commercetoolsFacetResultsToFacets(
+    facetDefinitions: FacetDefinition[],
     commercetoolsFacetResults: CommercetoolsFacetResults,
     productQuery: ProductQuery,
     locale: Locale,
   ): Facet[] {
     const facets: Facet[] = [];
-
+    let facetLabel: string;
+  
     for (const [facetKey, facetResult] of Object.entries(commercetoolsFacetResults)) {
       const facetQuery = this.findFacetQuery(productQuery, facetKey);
+      
+      facetDefinitions.filter((facet) => {
+        if (facet.attributeId === facetKey) {
+          facetLabel = facet.attributeLabel;
+        }
+      });
 
       switch (facetResult.type) {
         case 'range':
           facets.push(
             ProductMapper.commercetoolsRangeFacetResultToRangeFacet(
+              facetLabel,
               facetKey,
               facetResult as CommercetoolsRangeFacetResult,
               facetQuery as QueryRangeFacet | undefined,
@@ -501,6 +511,7 @@ export class ProductMapper {
           if (facetResult.dataType === 'number') {
             facets.push(
               ProductMapper.commercetoolsTermNumberFacetResultToRangeFacet(
+                facetLabel,
                 facetKey,
                 facetResult as CommercetoolsTermFacetResult,
                 facetQuery as QueryRangeFacet | undefined,
@@ -511,6 +522,7 @@ export class ProductMapper {
 
           facets.push(
             ProductMapper.commercetoolsTermFacetResultToTermFacet(
+              facetLabel,
               facetKey,
               facetResult as CommercetoolsTermFacetResult,
               facetQuery as QueryTermFacet | undefined,
@@ -527,6 +539,7 @@ export class ProductMapper {
   }
 
   static commercetoolsRangeFacetResultToRangeFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsRangeFacetResult,
     facetQuery: QueryRangeFacet | undefined,
@@ -534,7 +547,7 @@ export class ProductMapper {
     const rangeFacet: ResultRangeFacet = {
       type: FacetTypes.RANGE,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       min: facetResult.ranges[0].min,
       max: facetResult.ranges[0].max,
@@ -547,6 +560,7 @@ export class ProductMapper {
   }
 
   static commercetoolsTermFacetResultToTermFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsTermFacetResult,
     facetQuery: QueryTermFacet | undefined,
@@ -554,7 +568,7 @@ export class ProductMapper {
     const termFacet: TermFacet = {
       type: facetResult.dataType === 'boolean' ? FacetTypes.BOOLEAN : FacetTypes.TERM,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       selected: facetQuery !== undefined,
       terms: facetResult.terms.map((facetResultTerm) => {
@@ -572,6 +586,7 @@ export class ProductMapper {
   }
 
   static commercetoolsTermNumberFacetResultToRangeFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsTermFacetResult,
     facetQuery: QueryRangeFacet | undefined,
@@ -579,7 +594,7 @@ export class ProductMapper {
     const rangeFacet: ResultRangeFacet = {
       type: FacetTypes.RANGE,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       count: facetResult.total,
       min: Math.min(...facetResult.terms.map((facetResultTerm) => facetResultTerm.term)) ?? Number.MIN_SAFE_INTEGER,
