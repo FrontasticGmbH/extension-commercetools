@@ -348,11 +348,13 @@ export class ProductMapper {
         if (!attribute.isSearchable) {
           return;
         }
-
         const facetDefinition: FacetDefinition = {
           attributeType: attribute.type.name,
           attributeId: `variants.attributes.${attribute.name}`,
-          attributeLabel: attribute.name,
+          attributeLabel:
+            attribute.label[locale.language] !== undefined && attribute.label[locale.language].length > 0
+              ? attribute.label[locale.language]
+              : attribute.name,
         };
 
         if (facetDefinition.attributeId) facetDefinitionsIndex[facetDefinition.attributeId] = facetDefinition;
