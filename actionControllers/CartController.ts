@@ -12,6 +12,7 @@ import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
+import { PromotionApiFactory } from '../utils/PromotionApiFactory';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -84,9 +85,20 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
 
   const cartId = cart.cartId;
 
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  const promo = await promotionApi.updateCartItems(cart);
+
+  await cartApi.applyDiscountEffects(cart, promo.effects);
+
   const response: Response = {
     statusCode: 200,
-    body: JSON.stringify(cart),
+    body: JSON.stringify({ ...cart, promo }),
     sessionData: {
       ...request.sessionData,
       cartId,
@@ -122,6 +134,17 @@ export const replicateCart: ActionHook = async (request: Request, actionContext:
         },
       };
     }
+
+    const promotionApi = PromotionApiFactory.getDefaultApi(
+      actionContext.frontasticContext,
+      cart.cartId,
+      getLocale(request),
+      getCurrency(request),
+    );
+
+    const promo = await promotionApi.updateCartItems(cart);
+
+    await cartApi.applyDiscountEffects(cart, promo.effects);
 
     return {
       statusCode: 200,
@@ -169,6 +192,17 @@ export const updateLineItem: ActionHook = async (request: Request, actionContext
 
   const cartId = cart.cartId;
 
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  const promo = await promotionApi.updateCartItems(cart);
+
+  await cartApi.applyDiscountEffects(cart, promo.effects);
+
   const response: Response = {
     statusCode: 200,
     body: JSON.stringify(cart),
@@ -197,6 +231,17 @@ export const removeLineItem: ActionHook = async (request: Request, actionContext
 
   const cartId = cart.cartId;
 
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  const promo = await promotionApi.updateCartItems(cart);
+
+  await cartApi.applyDiscountEffects(cart, promo.effects);
+
   const response: Response = {
     statusCode: 200,
     body: JSON.stringify(cart),
@@ -214,6 +259,19 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
 
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
   const cartId = cart.cartId;
+
+  if (cart.shippingInfo?.price) {
+    const promotionApi = PromotionApiFactory.getDefaultApi(
+      actionContext.frontasticContext,
+      cartId,
+      getLocale(request),
+      getCurrency(request),
+    );
+
+    const promo = await promotionApi.updateShippingInfo(cart);
+
+    await cartApi.applyDiscountEffects(cart, promo.effects);
+  }
 
   const response: Response = {
     statusCode: 200,
@@ -235,6 +293,15 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
 
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
   const order = await cartApi.order(cart);
+
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cart.cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  await promotionApi.closeSession();
 
   emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
 
@@ -322,6 +389,17 @@ export const setShippingMethod: ActionHook = async (request: Request, actionCont
   };
 
   cart = await cartApi.setShippingMethod(cart, shippingMethod);
+
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cart.cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  const promo = await promotionApi.updateShippingInfo(cart);
+
+  await cartApi.applyDiscountEffects(cart, promo.effects);
 
   const response: Response = {
     statusCode: 200,
@@ -454,6 +532,42 @@ export const redeemDiscount: ActionHook = async (request: Request, actionContext
     }
 
     throw error;
+  }
+
+  return response;
+};
+
+export const redeemPromoCouponCode: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const cartApi = getCartApi(request, actionContext);
+  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
+
+  const body = JSON.parse(request.body);
+
+  const promotionApi = PromotionApiFactory.getDefaultApi(
+    actionContext.frontasticContext,
+    cart.cartId,
+    getLocale(request),
+    getCurrency(request),
+  );
+
+  let response: Response;
+
+  try {
+    const promo = await promotionApi.addCoupon(body.code);
+
+    await cartApi.applyDiscountEffects(cart, promo.effects);
+
+    response = {
+      statusCode: 200,
+      body: JSON.stringify({ success: true }),
+      sessionData: request.sessionData,
+    };
+  } catch (err) {
+    response = {
+      statusCode: 400,
+      body: JSON.stringify({ error: `Failed to redeem coupon ${body.code} with error ${err}` }),
+      sessionData: request.sessionData,
+    };
   }
 
   return response;
