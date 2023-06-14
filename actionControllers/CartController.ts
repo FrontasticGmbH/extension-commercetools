@@ -50,19 +50,26 @@ async function updateCartFromRequest(cartApi: CartApi, request: Request, actionC
 
 export const getCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
-  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
-  const cartId = cart.cartId;
 
-  const response: Response = {
-    statusCode: 200,
-    body: JSON.stringify(cart),
-    sessionData: {
-      ...request.sessionData,
-      cartId,
-    },
-  };
+  try {
+    const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
+    const cartId = cart.cartId;
 
-  return response;
+    return {
+      statusCode: 200,
+      body: JSON.stringify(cart),
+      sessionData: {
+        ...request.sessionData,
+        cartId,
+      },
+    };
+  } catch (error) {
+    const errorResponse = error as Error;
+    return {
+      statusCode: 400,
+      message: errorResponse.message,
+    };
+  }
 };
 
 export const addToCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
