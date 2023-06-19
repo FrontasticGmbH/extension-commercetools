@@ -487,10 +487,10 @@ export class ProductMapper {
   ): Facet[] {
     const facets: Facet[] = [];
     let facetLabel: string;
-  
+
     for (const [facetKey, facetResult] of Object.entries(commercetoolsFacetResults)) {
       const facetQuery = this.findFacetQuery(productQuery, facetKey);
-      
+
       facetDefinitions.filter((facet) => {
         if (facet.attributeId === facetKey) {
           facetLabel = facet.attributeLabel;
