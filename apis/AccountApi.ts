@@ -80,7 +80,7 @@ export class AccountApi extends BaseApi {
           }
         }
 
-        throw error;
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
     if (!account.confirmed) {

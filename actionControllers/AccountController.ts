@@ -8,7 +8,6 @@ import { getCurrency, getLocale } from '../utils/Request';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartApi } from '../apis/CartApi';
-import { PromotionApiFactory } from '@Commerce-commercetools/utils/PromotionApiFactory';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -51,15 +50,6 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
 
   try {
     account = await accountApi.login(account, cart);
-
-    const promotionApi = PromotionApiFactory.getDefaultApi(
-      actionContext.frontasticContext,
-      cart.cartId,
-      getLocale(request),
-      getCurrency(request),
-    );
-
-    await promotionApi.setProfile({ profileId: account.accountId });
   } catch (error) {
     if (error instanceof AccountAuthenticationError) {
       const response: Response = {
