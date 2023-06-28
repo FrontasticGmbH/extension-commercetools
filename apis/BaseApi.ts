@@ -281,7 +281,7 @@ interface ParsedLocale {
   currency: string;
 }
 
-const parseLocale = (locale: string): ParsedLocale => {
+const parseLocale = (locale: string, currency?: string): ParsedLocale => {
   const matches = locale.match(localeRegex);
 
   if (matches === null) {
@@ -299,24 +299,25 @@ const parseLocale = (locale: string): ParsedLocale => {
     }
   }
 
-  let currency: undefined | string = undefined;
-
-  const modifier = matches.groups.modifier;
-  if (modifier !== undefined) {
-    if (modifier in modifierToCurrency) {
-      currency = modifierToCurrency[modifier];
-    } else {
-      const foundCurrency = Object.values(territoryToCurrency).find((currency) => currency === modifier.toUpperCase());
-      if (foundCurrency !== undefined) {
-        currency = foundCurrency;
-      }
-    }
-  }
-
-  if (currency === undefined) {
+  if (!currency) {
     currency = defaultCurrency;
+
     if (territory in territoryToCurrency) {
       currency = territoryToCurrency[territory];
+    }
+
+    const modifier = matches.groups.modifier;
+    if (modifier !== undefined) {
+      if (modifier in modifierToCurrency) {
+        currency = modifierToCurrency[modifier];
+      } else {
+        const foundCurrency = Object.values(territoryToCurrency).find(
+          (currency) => currency === modifier.toUpperCase(),
+        );
+        if (foundCurrency !== undefined) {
+          currency = foundCurrency;
+        }
+      }
     }
   }
 
@@ -379,21 +380,18 @@ const pickCommercetoolsCountry = (
   return undefined;
 };
 
-const pickCommercetoolsCurrency = (
-  parsedLocale?: ParsedLocale,
-  availableCurrencies?: string[],
-  currency?: string,
-): string | undefined => {
-  const candidates = currency
-    ? [currency]
-    : [parsedLocale.currency, parseLocale(`${parsedLocale.language}_${parsedLocale.territory}`).currency];
+const pickCommercetoolsCurrency = (parsedLocale: ParsedLocale, availableCurrencies: string[]): string | undefined => {
+  const candidates = [
+    parsedLocale.currency,
+    parseLocale(`${parsedLocale.language}_${parsedLocale.territory}`).currency,
+  ];
 
   const foundCandidate = pickCandidate(candidates, availableCurrencies);
   if (foundCandidate !== undefined) {
     return foundCandidate;
-  } else {
-    return defaultCurrency;
   }
+
+  return undefined;
 };
 
 const clientTokensStored = new Map<string, Token>();
@@ -414,10 +412,10 @@ export abstract class BaseApi {
 
   constructor(frontasticContext: Context, locale: string | null, currency: string | null) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
-    this.locale = locale !== null ? locale : this.defaultLocale;
-
     this.defaultCurrency = defaultCurrency;
-    this.currency = currency !== null ? currency : this.defaultCurrency;
+
+    this.locale = locale !== null ? locale : this.defaultLocale;
+    this.currency = currency;
 
     const engine = 'commercetools';
     this.clientSettings = getConfig(frontasticContext.project, engine, this.locale);
@@ -500,8 +498,9 @@ export abstract class BaseApi {
   }
 
   protected async getCommercetoolsLocal(): Promise<Locale> {
-    const parsedLocale = parseLocale(this.locale);
-    const parsedDefaultLocale = parseLocale(this.defaultLocale);
+    const parsedLocale = parseLocale(this.locale, this.currency);
+    const parsedDefaultLocale = parseLocale(this.defaultLocale, this.currency);
+
     const project = await this.getProject();
 
     /**
@@ -520,8 +519,9 @@ export abstract class BaseApi {
       pickCommercetoolsCountry(parsedDefaultLocale, language, project.countries) ??
       project.countries[0];
     const currency =
-      pickCommercetoolsCurrency(parsedLocale, project.currencies, this.currency) ??
-      pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies, this.defaultCurrency);
+      pickCommercetoolsCurrency(parsedLocale, project.currencies) ??
+      pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies) ??
+      project.currencies[0];
     return Promise.resolve({
       language,
       country,
