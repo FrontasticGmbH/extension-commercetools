@@ -330,9 +330,13 @@ export const password: ActionHook = async (request: Request, actionContext: Acti
 export const requestReset: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const locale = getLocale(request);
 
+  type AccountRequestResetBody = {
+    email?: string;
+  };
+
   const accountApi = new AccountApi(actionContext.frontasticContext, locale, getCurrency(request));
 
-  const requestResetBody = JSON.parse(request.body).account;
+  const requestResetBody: AccountRequestResetBody = JSON.parse(request.body).account;
   const passwordResetToken = await accountApi.generatePasswordResetToken(requestResetBody.email);
 
   const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
