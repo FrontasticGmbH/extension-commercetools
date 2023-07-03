@@ -10,7 +10,7 @@ import { CartApi } from '../apis/CartApi';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
-type AccountRegisterBody = {
+export type AccountRegisterBody = {
   email?: string;
   password?: string;
   salutation?: string;
@@ -23,7 +23,7 @@ type AccountRegisterBody = {
   shippingAddress?: Address;
 };
 
-type AccountLoginBody = {
+export type AccountLoginBody = {
   email?: string;
   password?: string;
 };
