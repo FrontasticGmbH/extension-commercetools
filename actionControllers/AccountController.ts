@@ -1,5 +1,4 @@
-import { Request, Response } from '@frontastic/extension-types';
-import { ActionContext } from '@frontastic/extension-types';
+import { ActionContext, Request, Response } from '@frontastic/extension-types';
 import { AccountApi } from '../apis/AccountApi';
 import { Account } from '@Types/account/Account';
 import { Address } from '@Types/account/Address';
@@ -11,7 +10,7 @@ import { CartApi } from '../apis/CartApi';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
-type AccountRegisterBody = {
+export type AccountRegisterBody = {
   email?: string;
   password?: string;
   salutation?: string;
@@ -24,7 +23,7 @@ type AccountRegisterBody = {
   shippingAddress?: Address;
 };
 
-type AccountLoginBody = {
+export type AccountLoginBody = {
   email?: string;
   password?: string;
 };
