@@ -194,7 +194,9 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 
   emailApi.sendWelcomeCustomerEmail(account);
 
-  emailApi.sendAccountVerificationEmail(account);
+  if (!account.confirmed) {
+    emailApi.sendAccountVerificationEmail(account);
+  }
 
   const response: Response = {
     statusCode: 200,
