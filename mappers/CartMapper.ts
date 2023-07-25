@@ -119,7 +119,6 @@ export class CartMapper {
 
   static addressToCommercetoolsAddress: (address: Address) => CommercetoolsAddress = (address: Address) => {
     return {
-      id: address?.addressId,
       salutation: address?.salutation,
       firstName: address?.firstName,
       lastName: address?.lastName,
