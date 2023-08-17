@@ -4,7 +4,7 @@ import {
   Category as CommercetoolsCategory,
   CategoryReference,
   FacetResults as CommercetoolsFacetResults,
-  Money as CommercetoolsMoney,
+  _Money as CommercetoolsMoney,
   ProductProjection as CommercetoolsProductProjection,
   ProductType as CommercetoolsProductType,
   ProductVariant as CommercetoolsProductVariant,
@@ -348,10 +348,13 @@ export class ProductMapper {
         if (!attribute.isSearchable) {
           return;
         }
-
         const facetDefinition: FacetDefinition = {
           attributeType: attribute.type.name,
           attributeId: `variants.attributes.${attribute.name}`,
+          attributeLabel:
+            attribute.label[locale.language] !== undefined && attribute.label[locale.language].length > 0
+              ? attribute.label[locale.language]
+              : attribute.name,
         };
 
         if (facetDefinition.attributeId) facetDefinitionsIndex[facetDefinition.attributeId] = facetDefinition;
@@ -451,15 +454,24 @@ export class ProductMapper {
         case 'text':
         case 'reference':
         default:
-          if (queryFacet.type === FilterTypes.TERM || queryFacet.type === FilterTypes.BOOLEAN) {
+          if (queryFacet.type === FilterTypes.TERM) {
             filterFacets.push(`${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms?.join('","')}"`);
-          } else {
-            filterFacets.push(
-              `${queryFacet.identifier}:range (${(queryFacet as QueryRangeFacet).min} to ${
-                (queryFacet as QueryRangeFacet).max
-              })`,
-            );
+            break;
           }
+
+          if (queryFacet.type === FilterTypes.BOOLEAN) {
+            filterFacets.push(
+              `${queryFacet.identifier}:"${(queryFacet as QueryTermFacet).terms[0] === 'T' ? 'true' : 'false'}"`,
+            );
+            break;
+          }
+
+          filterFacets.push(
+            `${queryFacet.identifier}:range (${(queryFacet as QueryRangeFacet).min} to ${
+              (queryFacet as QueryRangeFacet).max
+            })`,
+          );
+
           break;
       }
     });
@@ -468,19 +480,28 @@ export class ProductMapper {
   }
 
   static commercetoolsFacetResultsToFacets(
+    facetDefinitions: FacetDefinition[],
     commercetoolsFacetResults: CommercetoolsFacetResults,
     productQuery: ProductQuery,
     locale: Locale,
   ): Facet[] {
     const facets: Facet[] = [];
+    let facetLabel: string;
 
     for (const [facetKey, facetResult] of Object.entries(commercetoolsFacetResults)) {
       const facetQuery = this.findFacetQuery(productQuery, facetKey);
+
+      facetDefinitions.filter((facet) => {
+        if (facet.attributeId === facetKey) {
+          facetLabel = facet.attributeLabel;
+        }
+      });
 
       switch (facetResult.type) {
         case 'range':
           facets.push(
             ProductMapper.commercetoolsRangeFacetResultToRangeFacet(
+              facetLabel,
               facetKey,
               facetResult as CommercetoolsRangeFacetResult,
               facetQuery as QueryRangeFacet | undefined,
@@ -492,6 +513,7 @@ export class ProductMapper {
           if (facetResult.dataType === 'number') {
             facets.push(
               ProductMapper.commercetoolsTermNumberFacetResultToRangeFacet(
+                facetLabel,
                 facetKey,
                 facetResult as CommercetoolsTermFacetResult,
                 facetQuery as QueryRangeFacet | undefined,
@@ -502,6 +524,7 @@ export class ProductMapper {
 
           facets.push(
             ProductMapper.commercetoolsTermFacetResultToTermFacet(
+              facetLabel,
               facetKey,
               facetResult as CommercetoolsTermFacetResult,
               facetQuery as QueryTermFacet | undefined,
@@ -518,6 +541,7 @@ export class ProductMapper {
   }
 
   static commercetoolsRangeFacetResultToRangeFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsRangeFacetResult,
     facetQuery: QueryRangeFacet | undefined,
@@ -525,7 +549,7 @@ export class ProductMapper {
     const rangeFacet: ResultRangeFacet = {
       type: FacetTypes.RANGE,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       min: facetResult.ranges[0].min,
       max: facetResult.ranges[0].max,
@@ -538,14 +562,15 @@ export class ProductMapper {
   }
 
   static commercetoolsTermFacetResultToTermFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsTermFacetResult,
     facetQuery: QueryTermFacet | undefined,
   ) {
     const termFacet: TermFacet = {
-      type: FacetTypes.TERM,
+      type: facetResult.dataType === 'boolean' ? FacetTypes.BOOLEAN : FacetTypes.TERM,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       selected: facetQuery !== undefined,
       terms: facetResult.terms.map((facetResultTerm) => {
@@ -563,6 +588,7 @@ export class ProductMapper {
   }
 
   static commercetoolsTermNumberFacetResultToRangeFacet(
+    facetLabel: string,
     facetKey: string,
     facetResult: CommercetoolsTermFacetResult,
     facetQuery: QueryRangeFacet | undefined,
@@ -570,7 +596,7 @@ export class ProductMapper {
     const rangeFacet: ResultRangeFacet = {
       type: FacetTypes.RANGE,
       identifier: facetKey,
-      label: facetKey,
+      label: facetLabel,
       key: facetKey,
       count: facetResult.total,
       min: Math.min(...facetResult.terms.map((facetResultTerm) => facetResultTerm.term)) ?? Number.MIN_SAFE_INTEGER,

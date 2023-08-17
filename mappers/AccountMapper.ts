@@ -50,8 +50,6 @@ export class AccountMapper {
 
   static addressToCommercetoolsAddress: (address: Address) => BaseAddress = (address: Address) => {
     return {
-      id: address.addressId,
-      // key: Guid.newGuid(),
       salutation: address.salutation,
       firstName: address.firstName,
       lastName: address.lastName,

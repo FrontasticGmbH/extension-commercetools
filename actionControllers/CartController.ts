@@ -1,5 +1,4 @@
-import { Request, Response } from '@frontastic/extension-types';
-import { ActionContext } from '@frontastic/extension-types';
+import { ActionContext, Request, Response } from '@frontastic/extension-types';
 import { Cart } from '@Types/cart/Cart';
 import { LineItem } from '@Types/cart/LineItem';
 import { Address } from '@Types/account/Address';
@@ -7,16 +6,17 @@ import { CartFetcher } from '../utils/CartFetcher';
 import { ShippingMethod } from '@Types/cart/ShippingMethod';
 import { Payment, PaymentStatuses } from '@Types/cart/Payment';
 import { CartApi } from '../apis/CartApi';
-import { getLocale } from '../utils/Request';
+import { getCurrency, getLocale } from '../utils/Request';
 import { Discount } from '@Types/cart/Discount';
 import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
+import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getCartApi(request: Request, actionContext: ActionContext) {
-  return new CartApi(actionContext.frontasticContext, getLocale(request));
+  return new CartApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
 }
 
 async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
@@ -49,19 +49,26 @@ async function updateCartFromRequest(cartApi: CartApi, request: Request, actionC
 
 export const getCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
-  const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
-  const cartId = cart.cartId;
 
-  const response: Response = {
-    statusCode: 200,
-    body: JSON.stringify(cart),
-    sessionData: {
-      ...request.sessionData,
-      cartId,
-    },
-  };
+  try {
+    const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
+    const cartId = cart.cartId;
 
-  return response;
+    return {
+      statusCode: 200,
+      body: JSON.stringify(cart),
+      sessionData: {
+        ...request.sessionData,
+        cartId,
+      },
+    };
+  } catch (error) {
+    const errorResponse = error as Error;
+    return {
+      statusCode: 400,
+      message: errorResponse.message,
+    };
+  }
 };
 
 export const addToCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
@@ -94,6 +101,62 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
   };
 
   return response;
+};
+
+export const replicateCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const cartApi = getCartApi(request, actionContext);
+  const orderId = request.query?.['orderId'];
+
+  if (!orderId) {
+    return {
+      statusCode: 422,
+      body: JSON.stringify(`Order was not found.`),
+      sessionData: {
+        ...request.sessionData,
+      },
+    };
+  }
+
+  try {
+    const cart = await cartApi.replicateCart(orderId);
+
+    if (!cart) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify(`We could not replicate cart for order : "${orderId}".`),
+        sessionData: {
+          ...request.sessionData,
+        },
+      };
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(cart),
+      sessionData: {
+        ...request.sessionData,
+        cartId: cart.cartId,
+      },
+    };
+  } catch (error) {
+    if (error instanceof ExternalError) {
+      return {
+        statusCode: error.status,
+        body: JSON.stringify(error.message),
+        sessionData: {
+          ...request.sessionData,
+        },
+      };
+    }
+    const err = error as Error;
+    return {
+      statusCode: 400,
+      body: JSON.stringify(err.message),
+      sessionData: {
+        ...request.sessionData,
+      },
+    };
+  }
 };
 
 export const updateLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {

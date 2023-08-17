@@ -35,6 +35,10 @@ export class ProductApi extends BaseApi {
         attributeId: 'variants.price',
         attributeType: 'money',
       },
+      {
+        attributeId: 'variants.scopedPriceDiscounted',
+        attributeType: 'boolean',
+      },
     ];
 
     const queryArgFacets = ProductMapper.facetDefinitionsToCommercetoolsQueryArgFacets(facetDefinitions, locale);
@@ -47,25 +51,32 @@ export class ProductApi extends BaseApi {
       filterQuery.push(`variants.sku:"${productQuery.skus.join('","')}"`);
     }
 
-    if (productQuery.category !== undefined && productQuery.category !== '') {
-      let categoryId = productQuery.category;
+    if (productQuery.categories !== undefined && productQuery.categories.length !== 0) {
+      let categoryIds = productQuery.categories.filter(function uniqueCategories(value, index, self) {
+        return self.indexOf(value) === index;
+      });
 
       // commercetools only allows filter categories by id. If we are using something different as categoryIdField,
       // we need first to fetch the category to get the correspondent category id.
       if (this.categoryIdField !== 'id') {
         const categoriesMethodArgs = {
           queryArgs: {
-            limit: 1,
-            where: [`key="${categoryId}"`],
+            where: [`key in ("${categoryIds.join('","')}")`],
           },
         };
 
-        categoryId = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then((response) => {
-          return response.body.results[0].id;
+        categoryIds = await this.getCommercetoolsCategoryPagedQueryResponse(categoriesMethodArgs).then((response) => {
+          return response.body.results.map((category) => {
+            return category.id;
+          });
         });
       }
 
-      filterQuery.push(`categories.id:subtree("${categoryId}")`);
+      filterQuery.push(
+        `categories.id: ${categoryIds.map((category) => {
+          return `subtree("${category}")`;
+        })}`,
+      );
     }
 
     if (productQuery.filters !== undefined) {
@@ -96,10 +107,17 @@ export class ProductApi extends BaseApi {
       filterFacets.push(...ProductMapper.facetDefinitionsToFilterFacets(productQuery.facets, facetDefinitions, locale));
     }
 
-    if (productQuery.sortAttributes !== undefined) {
-      Object.keys(productQuery.sortAttributes).map((field, directionIndex) => {
-        sortAttributes.push(`${field} ${Object.values(productQuery.sortAttributes)[directionIndex]}`);
-      });
+    switch (true) {
+      case productQuery.sortAttributes !== undefined:
+        Object.keys(productQuery.sortAttributes).map((field, directionIndex) => {
+          sortAttributes.push(`${field} ${Object.values(productQuery.sortAttributes)[directionIndex]}`);
+        });
+        break;
+      default:
+        // By default, in CoCo, search results are sorted descending by their relevancy with respect to the provided
+        // text (that is their “score”). Sorting by score and then by id will ensure consistent products order
+        // across several search requests for products that have the same relevance score.
+        sortAttributes.push(`score desc`, `id desc`);
     }
 
     const methodArgs = {
@@ -138,7 +156,12 @@ export class ProductApi extends BaseApi {
           total: response.body.total,
           items: items,
           count: response.body.count,
-          facets: ProductMapper.commercetoolsFacetResultsToFacets(response.body.facets, productQuery, locale),
+          facets: ProductMapper.commercetoolsFacetResultsToFacets(
+            facetDefinitions,
+            response.body.facets,
+            productQuery,
+            locale,
+          ),
           previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
           nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
           query: productQuery,
@@ -172,9 +195,9 @@ export class ProductApi extends BaseApi {
 
     // Category filter. Not included as commercetools product type.
     filterFields.push({
-      field: 'categoryId',
+      field: 'categoryIds',
       type: FilterFieldTypes.ENUM,
-      label: 'Category ID',
+      label: 'Category',
       values: await this.queryCategories({ limit: 250 }).then((result) => {
         return (result.items as Category[]).map((item) => {
           return {

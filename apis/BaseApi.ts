@@ -15,7 +15,7 @@ import crypto from 'crypto';
 const defaultCurrency = 'EUR';
 
 const localeRegex =
-  /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
+  /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z0-9]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
 const languageToTerritory = {
   en: 'GB',
@@ -281,7 +281,7 @@ interface ParsedLocale {
   currency: string;
 }
 
-const parseLocale = (locale: string): ParsedLocale => {
+const parseLocale = (locale: string, currency?: string): ParsedLocale => {
   const matches = locale.match(localeRegex);
 
   if (matches === null) {
@@ -299,25 +299,25 @@ const parseLocale = (locale: string): ParsedLocale => {
     }
   }
 
-  let currency: undefined | string = undefined;
+  if (!currency) {
+    currency = defaultCurrency;
 
-  const modifier = matches.groups.modifier;
-  if (modifier !== undefined) {
-    if (modifier in modifierToCurrency) {
-      currency = modifierToCurrency[modifier];
-    } else {
-      const foundCurrency = Object.values(territoryToCurrency).find((currency) => currency === modifier.toUpperCase());
-      if (foundCurrency !== undefined) {
-        currency = foundCurrency;
-      }
-    }
-  }
-
-  if (currency === undefined) {
     if (territory in territoryToCurrency) {
       currency = territoryToCurrency[territory];
-    } else {
-      currency = defaultCurrency;
+    }
+
+    const modifier = matches.groups.modifier;
+    if (modifier !== undefined) {
+      if (modifier in modifierToCurrency) {
+        currency = modifierToCurrency[modifier];
+      } else {
+        const foundCurrency = Object.values(territoryToCurrency).find(
+          (currency) => currency === modifier.toUpperCase(),
+        );
+        if (foundCurrency !== undefined) {
+          currency = foundCurrency;
+        }
+      }
     }
   }
 
@@ -405,12 +405,17 @@ export abstract class BaseApi {
   protected categoryIdField: string;
   protected locale: string;
   protected defaultLocale: string;
+  protected defaultCurrency: string;
   protected clientHashKey: string;
   protected token: Token;
+  protected currency: string;
 
-  constructor(frontasticContext: Context, locale: string | null) {
+  constructor(frontasticContext: Context, locale: string | null, currency: string | null) {
     this.defaultLocale = frontasticContext.project.defaultLocale;
+    this.defaultCurrency = defaultCurrency;
+
     this.locale = locale !== null ? locale : this.defaultLocale;
+    this.currency = currency;
 
     const engine = 'COMMERCETOOLS';
     this.clientSettings = getConfig(frontasticContext, engine, this.locale);
@@ -493,8 +498,9 @@ export abstract class BaseApi {
   }
 
   protected async getCommercetoolsLocal(): Promise<Locale> {
-    const parsedLocale = parseLocale(this.locale);
-    const parsedDefaultLocale = parseLocale(this.defaultLocale);
+    const parsedLocale = parseLocale(this.locale, this.currency);
+    const parsedDefaultLocale = parseLocale(this.defaultLocale, this.currency);
+
     const project = await this.getProject();
 
     /**
@@ -516,7 +522,6 @@ export abstract class BaseApi {
       pickCommercetoolsCurrency(parsedLocale, project.currencies) ??
       pickCommercetoolsCurrency(parsedDefaultLocale, project.currencies) ??
       project.currencies[0];
-
     return Promise.resolve({
       language,
       country,

@@ -5,7 +5,7 @@ import {
   CustomerUpdate,
   CustomerUpdateAction,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/customer';
-import { AccountMapper } from '../mappers/AccontMapper';
+import { AccountMapper } from '../mappers/AccountMapper';
 import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
 import { Cart } from '@Types/cart/Cart';
 import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
@@ -80,7 +80,7 @@ export class AccountApi extends BaseApi {
           }
         }
 
-        throw error;
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
     if (!account.confirmed) {

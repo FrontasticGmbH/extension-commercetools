@@ -3,6 +3,7 @@ import * as ProductActions from './actionControllers/ProductController';
 import * as CartActions from './actionControllers/CartController';
 import * as WishlistActions from './actionControllers/WishlistController';
 import * as ProjectActions from './actionControllers/ProjectController';
+import { DataSourcePreviewPayloadElement } from '@frontastic/extension-types/src/ts';
 
 import {
   DataSourceConfiguration,
@@ -13,7 +14,7 @@ import {
   ExtensionRegistry,
   Request,
 } from '@frontastic/extension-types';
-import { getLocale, getPath } from './utils/Request';
+import { getCurrency, getLocale, getPath } from './utils/Request';
 import { ProductRouter } from './utils/ProductRouter';
 import { Product } from '@Types/product/Product';
 import { SearchRouter } from './utils/SearchRouter';
@@ -22,6 +23,15 @@ import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
+
+const getPreviewPayload = (queryResult: Result) => {
+  return (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
+    return {
+      title: product.name,
+      image: product?.variants[0]?.images[0],
+    };
+  });
+};
 
 export default {
   'dynamic-page-handler': async (
@@ -96,13 +106,17 @@ export default {
   'data-sources': {
     'frontastic/product-list': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
       return await productApi.query(productQuery).then((queryResult) => {
-        return {
-          dataSourcePayload: queryResult,
-        };
+        return !context.isPreview
+          ? { dataSourcePayload: queryResult }
+          : {
+              dataSourcePayload: queryResult,
+              previewPayload: getPreviewPayload(queryResult),
+            };
       });
     },
 
@@ -114,43 +128,60 @@ export default {
       }
 
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
       const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
-      const queryWithCategoryId = {
+      const query = {
         ...productQuery,
-        category: (
-          context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any
-        )?.preloadedValue?.product?.categories?.[0]?.categoryId,
+        categories: [
+          (context.pageFolder.dataSourceConfigurations.find((stream) => (stream as any).streamId === '__master') as any)
+            ?.preloadedValue?.product?.categories?.[0]?.categoryId,
+        ],
       };
 
-      return await productApi.query(queryWithCategoryId).then((queryResult) => {
-        return {
-          dataSourcePayload: queryResult,
-        };
+      return await productApi.query(query).then((queryResult) => {
+        return !context.isPreview
+          ? { dataSourcePayload: queryResult }
+          : {
+              dataSourcePayload: queryResult,
+              previewPayload: getPreviewPayload(queryResult),
+            };
       });
     },
 
     'frontastic/product': async (config: DataSourceConfiguration, context: DataSourceContext) => {
       const locale = context.request ? getLocale(context.request) : null;
+      const currency = context.request ? getCurrency(context.request) : null;
 
-      const productApi = new ProductApi(context.frontasticContext, locale);
+      const productApi = new ProductApi(context.frontasticContext, locale, currency);
 
       const productQuery = ProductQueryFactory.queryFromParams(context?.request, config);
 
       return await productApi.getProduct(productQuery).then((queryResult) => {
-        return {
-          dataSourcePayload: {
-            product: queryResult,
-          },
-        };
+        const payLoadResult = { dataSourcePayload: { product: queryResult } };
+
+        return !context.isPreview
+          ? payLoadResult
+          : {
+              payLoadResult,
+              previewPayload: [
+                {
+                  title: queryResult.name,
+                  image: queryResult?.variants[0]?.images[0],
+                },
+              ],
+            };
       });
     },
 
     'frontastic/empty': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-      return {
-        dataSourcePayload: {},
-      };
+      return !context.isPreview
+        ? { dataSourcePayload: {} }
+        : {
+            dataSourcePayload: {},
+            previewPayload: [],
+          };
     },
   },
   actions: {

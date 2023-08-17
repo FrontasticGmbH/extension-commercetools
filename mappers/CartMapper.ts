@@ -119,7 +119,6 @@ export class CartMapper {
 
   static addressToCommercetoolsAddress: (address: Address) => CommercetoolsAddress = (address: Address) => {
     return {
-      id: address?.addressId,
       salutation: address?.salutation,
       firstName: address?.firstName,
       lastName: address?.lastName,
@@ -188,6 +187,9 @@ export class CartMapper {
     return {
       ...shippingMethod,
       price: ProductMapper.commercetoolsMoneyToMoney(commercetoolsShippingInfo.price),
+      discounts:
+        commercetoolsShippingInfo.discountedPrice?.includedDiscounts?.map((discount) => discount.discountedAmount) ??
+        [],
     };
   };
 
