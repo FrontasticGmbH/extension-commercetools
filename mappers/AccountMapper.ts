@@ -1,8 +1,7 @@
-import { Customer as commercetoolsCustomer } from '@commercetools/platform-sdk';
+import { BaseAddress, Customer as commercetoolsCustomer } from '@commercetools/platform-sdk';
 import { Locale } from '../Locale';
 import { Account } from '@Types/account/Account';
 import { Address } from '@Types/account/Address';
-import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
 
 export class AccountMapper {
   static commercetoolsCustomerToAccount: (commercetoolsCustomer: commercetoolsCustomer, locale: Locale) => Account = (

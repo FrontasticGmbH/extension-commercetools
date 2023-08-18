@@ -1,17 +1,21 @@
 import {
+  _Money as CommercetoolsMoney,
   Attribute as CommercetoolsAttribute,
   AttributeDefinition as CommercetoolsAttributeDefinition,
+  AttributeEnumType,
+  AttributeLocalizedEnumType,
+  AttributeSetType,
+  AttributeType,
   Category as CommercetoolsCategory,
   CategoryReference,
   FacetResults as CommercetoolsFacetResults,
-  _Money as CommercetoolsMoney,
+  Price as CommercetoolsPrice,
   ProductProjection as CommercetoolsProductProjection,
   ProductType as CommercetoolsProductType,
   ProductVariant as CommercetoolsProductVariant,
   RangeFacetResult as CommercetoolsRangeFacetResult,
   TermFacetResult as CommercetoolsTermFacetResult,
   TypedMoney,
-  Price as CommercetoolsPrice,
 } from '@commercetools/platform-sdk';
 import { Product } from '@Types/product/Product';
 import { Variant } from '@Types/product/Variant';
@@ -21,12 +25,6 @@ import { ProductRouter } from '../utils/ProductRouter';
 import { Locale } from '../Locale';
 import { Money } from '@Types/product/Money';
 import { FilterField, FilterFieldTypes, FilterFieldValue } from '@Types/product/FilterField';
-import {
-  AttributeEnumType,
-  AttributeLocalizedEnumType,
-  AttributeSetType,
-  AttributeType,
-} from '@commercetools/platform-sdk/dist/declarations/src/generated/models/product-type';
 import { Facet, FacetTypes } from '@Types/result/Facet';
 import { TermFacet } from '@Types/result/TermFacet';
 import { RangeFacet as ResultRangeFacet } from '@Types//result/RangeFacet';
