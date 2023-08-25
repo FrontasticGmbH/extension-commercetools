@@ -18,7 +18,6 @@ import {
   CartRemoveLineItemAction,
   CartSetCountryAction,
   CartSetCustomerEmailAction,
-  CartSetDirectDiscountsAction,
   CartUpdate,
 } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
 import { Address } from '@Types/account/Address';
@@ -40,7 +39,6 @@ import { ExternalError } from '../utils/Errors';
 import { CartNotCompleteError } from '../errors/CartNotCompleteError';
 import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
-import { Effect } from 'interfaces/Promotion';
 import { Context } from '@frontastic/extension-types';
 import { ProductApi } from './ProductApi';
 
@@ -710,91 +708,6 @@ export class CartApi extends BaseApi {
       .catch((error) => {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
-  }
-
-  async applyDiscountEffects(cart: Cart, effects: Effect[]) {
-    const locale = await this.getCommercetoolsLocal();
-
-    const action: CartSetDirectDiscountsAction = {
-      action: 'setDirectDiscounts',
-      discounts: [],
-    };
-
-    const addDiscountForLineItems = (amount: number) => {
-      action.discounts.push({
-        value: {
-          type: 'absolute',
-          money: [
-            {
-              type: 'centPrecision',
-              centAmount: amount * 100,
-              currencyCode: locale.currency,
-              fractionDigits: 2,
-            },
-          ],
-        },
-        target: {
-          type: 'lineItems',
-          predicate: '1=1',
-        },
-      });
-    };
-
-    const addDiscountForShipping = (amount: number) => {
-      action.discounts.push({
-        value: {
-          type: 'absolute',
-          money: [
-            {
-              type: 'centPrecision',
-              centAmount: amount * 100,
-              currencyCode: locale.currency,
-              fractionDigits: 2,
-            },
-          ],
-        },
-        target: {
-          type: 'shipping',
-        },
-      });
-    };
-
-    const addFreeItem = async (sku: string) => {
-      const item = await this.productApi.getProduct({ skus: [sku] });
-
-      action.discounts.push({
-        value: {
-          type: 'giftLineItem',
-          product: {
-            typeId: 'product',
-            id: item.productId,
-          },
-          variantId: +item.variants.find((v) => v.sku === sku).id,
-        },
-      });
-    };
-
-    for (const effect of effects) {
-      switch (effect.effectType) {
-        case 'setDiscount':
-        case 'setDiscountPerItem':
-          addDiscountForLineItems(effect.props.value);
-          break;
-        case 'setDiscountPerAdditionalCost':
-          addDiscountForShipping(effect.props.value);
-          break;
-        case 'addFreeItem':
-          await addFreeItem(effect.props.sku);
-          break;
-      }
-    }
-
-    const cartUpdate = {
-      version: +cart.cartVersion,
-      actions: [action],
-    } as CartUpdate;
-
-    return this.updateCart(cart.cartId, cartUpdate, locale);
   }
 
   protected buildCartWithAvailableShippingMethods: (
