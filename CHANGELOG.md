@@ -1,4 +1,10 @@
 
+## Version 1.5.1 (2023-08-25)
+
+** Bug fixes **
+
+- Removed usage of promotion from CoCo extension
+
 ## Version 1.5.0 (2023-08-25)
 
 ** New Features and Improvements **
