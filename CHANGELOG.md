@@ -1,4 +1,23 @@
 
+## Version 1.5.1 (2023-08-25)
+
+** Bug fixes **
+
+- Removed usage of promotion from CoCo extension
+
+## Version 1.5.0 (2023-08-25)
+
+** New Features and Improvements **
+
+- Allow terretory with numbers in locale parsing
+
+** Bug fixes **
+
+- Don't set addressId when mapping to CoCo address
+- Added missing field to account request mapper and validate confirmation before send email
+- Parse currency along with locale
+- Return human readable facet label
+
 ## Version 1.4.0 (2023-03-08)
 
 ** New Features and Improvements **
