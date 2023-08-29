@@ -1,14 +1,14 @@
 import { BaseApi } from './BaseApi';
 import { Account } from '@Types/account/Account';
 import {
+  BaseAddress,
+  CartResourceIdentifier,
   CustomerDraft,
   CustomerUpdate,
   CustomerUpdateAction,
-} from '@commercetools/platform-sdk/dist/declarations/src/generated/models/customer';
+} from '@commercetools/platform-sdk';
 import { AccountMapper } from '../mappers/AccountMapper';
-import { BaseAddress } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/common';
 import { Cart } from '@Types/cart/Cart';
-import { CartResourceIdentifier } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
 import { Address } from '@Types/account/Address';
 import { Guid } from '../utils/Guid';
 import { ExternalError, ValidationError } from '../utils/Errors';
