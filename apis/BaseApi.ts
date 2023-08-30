@@ -416,7 +416,8 @@ export abstract class BaseApi {
     this.locale = locale !== null ? locale : this.defaultLocale;
     this.currency = currency;
 
-    const engine = 'COMMERCETOOLS';
+    // const engine = 'COMMERCETOOLS';
+    const engine = 'commercetools';
     this.clientSettings = getConfig(frontasticContext, engine, this.locale);
 
     this.environment = frontasticContext.environment;
