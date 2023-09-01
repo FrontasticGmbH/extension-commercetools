@@ -1,4 +1,10 @@
 
+## Version 1.6.0 (2023-09-01)
+
+** New Features and Improvements **
+
+- Falled back into project config if studio config is not set for all extensions
+
 ## Version 1.5.1 (2023-08-25)
 
 ** Bug fixes **
