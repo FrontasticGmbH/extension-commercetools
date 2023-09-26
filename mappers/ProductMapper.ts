@@ -320,7 +320,7 @@ export class ProductMapper {
     for (const value of commercetoolsAttributeValues) {
       filterFieldValues.push({
         value: value.key,
-        name: value.label?.[locale.language] ?? value.key,
+        name: value.label?.[locale.language] ?? undefined,
       });
     }
 
