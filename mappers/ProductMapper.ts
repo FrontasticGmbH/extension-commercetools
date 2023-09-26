@@ -300,16 +300,16 @@ export class ProductMapper {
     commercetoolsAttributeDefinition: CommercetoolsAttributeDefinition,
     locale: Locale,
   ): FilterField {
-    let commercetoolsAttributeType = commercetoolsAttributeDefinition.type.name;
+    let commercetoolsAttributeTypeName = commercetoolsAttributeDefinition.type.name;
 
     let commercetoolsAttributeValues = commercetoolsAttributeDefinition.type?.hasOwnProperty('values')
       ? (commercetoolsAttributeDefinition.type as AttributeEnumType | AttributeLocalizedEnumType).values
       : [];
 
-    if (commercetoolsAttributeType === 'set' && commercetoolsAttributeDefinition.type?.hasOwnProperty('elementType')) {
-      const elementType: AttributeType = (commercetoolsAttributeDefinition.type as AttributeSetType).elementType;
+    if (commercetoolsAttributeTypeName === 'set') {
+      const elementType = (commercetoolsAttributeDefinition.type as AttributeSetType).elementType;
 
-      commercetoolsAttributeType = elementType.name;
+      commercetoolsAttributeTypeName = elementType.name;
       commercetoolsAttributeValues = elementType?.hasOwnProperty('values')
         ? (elementType as AttributeEnumType | AttributeLocalizedEnumType).values
         : [];
@@ -320,15 +320,15 @@ export class ProductMapper {
     for (const value of commercetoolsAttributeValues) {
       filterFieldValues.push({
         value: value.key,
-        name: value.label?.[locale.language] ?? undefined,
+        name: commercetoolsAttributeTypeName === 'enum' ? value.label : value.label?.[locale.language] ?? undefined,
       });
     }
 
     return {
       field: `variants.attributes.${commercetoolsAttributeDefinition.name}`,
-      type: TypeMap.has(commercetoolsAttributeType)
-        ? TypeMap.get(commercetoolsAttributeType)
-        : commercetoolsAttributeType,
+      type: TypeMap.has(commercetoolsAttributeTypeName)
+        ? TypeMap.get(commercetoolsAttributeTypeName)
+        : commercetoolsAttributeTypeName,
       label: commercetoolsAttributeDefinition.label?.[locale.language] ?? commercetoolsAttributeDefinition.name,
       values: filterFieldValues.length > 0 ? filterFieldValues : undefined,
     };
