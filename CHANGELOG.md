@@ -1,4 +1,14 @@
 
+## Version 1.7.0 (2023-09-27)
+
+** New Features and Improvements **
+
+- Added CoCo, SMTP, and Adyen schema fields for project configuration schema 
+
+** Bug fixes **
+
+- Handled attribute labels when there is no localization
+
 ## Version 1.6.0 (2023-09-01)
 
 ** New Features and Improvements **
