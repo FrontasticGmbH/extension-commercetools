@@ -32,6 +32,7 @@ export class AccountApi extends BaseApi {
     } = this.extractAddresses(account);
 
     const customerDraft: CustomerDraft = {
+      key: Guid.newGuid(),
       email: account.email,
       password: account.password,
       salutation: account?.salutation,
