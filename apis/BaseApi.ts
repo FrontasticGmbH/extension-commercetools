@@ -11,16 +11,17 @@ import { Token } from '@Types/Token';
 import { tokenHasExpired } from '../utils/Token';
 import crypto from 'crypto';
 
-const defaultCurrency = 'EUR';
+const defaultCurrency = 'USD';
 
 const localeRegex =
   /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z0-9]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
 const languageToTerritory = {
-  en: 'GB',
+  en: 'US',
 };
 
 const modifierToCurrency = {
+  dollar: 'USD',
   euro: 'EUR',
 };
 
