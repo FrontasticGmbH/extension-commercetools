@@ -294,6 +294,8 @@ export const logout: ActionHook = async (request: Request, actionContext: Action
     sessionData: {
       ...request.sessionData,
       account: undefined,
+      cartId: undefined,
+      wishlistId: undefined,
     },
   } as Response;
 };
