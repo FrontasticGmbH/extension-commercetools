@@ -130,11 +130,10 @@ export const removeLineItem: ActionHook = async (request, actionContext) => {
 };
 
 export const deleteWishlist: ActionHook = async (request, actionContext) => {
-  try {
-    const wishlistApi = getWishlistApi(request, actionContext);
-    const wishlist = await fetchWishlist(request, wishlistApi);
-    await wishlistApi.deleteWishlist(wishlist);
-  } catch (error) {}
+  const wishlistApi = getWishlistApi(request, actionContext);
+  const wishlist = await fetchWishlist(request, wishlistApi);
+
+  await wishlistApi.deleteWishlist(wishlist);
 
   return {
     statusCode: 200,

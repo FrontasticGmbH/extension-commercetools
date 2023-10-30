@@ -17,14 +17,12 @@ const localeRegex =
   /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z0-9]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
 const languageToTerritory = {
-  en: 'GB',
-  en_US: 'US',
+  en: 'US',
 };
 
 const modifierToCurrency = {
   dollar: 'USD',
   euro: 'EUR',
-  usd: 'USD',
 };
 
 const territoryToCurrency = {
@@ -419,7 +417,7 @@ export abstract class BaseApi {
     this.locale = locale !== null ? locale : this.defaultLocale;
     this.currency = currency;
 
-    const engine = 'COMMERCETOOLS';
+    const engine = 'commercetools';
     this.clientSettings = getConfig(frontasticContext, engine, this.locale);
 
     this.environment = frontasticContext.environment;

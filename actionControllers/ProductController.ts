@@ -61,7 +61,7 @@ export const query: ActionHook = async (request: Request, actionContext: ActionC
 };
 
 export const queryCategories: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
+  const productApi = getProductApi(request, actionContext);
 
   const categoryQuery: CategoryQuery = {
     limit: request.query?.limit ?? undefined,
@@ -76,7 +76,9 @@ export const queryCategories: ActionHook = async (request: Request, actionContex
   const response: Response = {
     statusCode: 200,
     body: JSON.stringify(queryResult),
-    sessionData: request.sessionData,
+    sessionData: {
+      ...request.sessionData,
+    },
   };
 
   return response;

@@ -151,7 +151,7 @@ function mapRequestToAccount(request: Request): Account {
   return account;
 }
 
-export const getAccount: ActionHook = async (request: Request) => {
+export const getAccount: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const account = fetchAccountFromSession(request);
 
   if (account === undefined) {
@@ -194,7 +194,9 @@ export const register: ActionHook = async (request: Request, actionContext: Acti
 
   emailApi.sendWelcomeCustomerEmail(account);
 
-  emailApi.sendAccountVerificationEmail(account);
+  if (!account.confirmed) {
+    emailApi.sendAccountVerificationEmail(account);
+  }
 
   const response: Response = {
     statusCode: 200,
@@ -285,7 +287,7 @@ export const login: ActionHook = async (request: Request, actionContext: ActionC
   return await loginAccount(request, actionContext, account);
 };
 
-export const logout: ActionHook = async (request: Request) => {
+export const logout: ActionHook = async (request: Request, actionContext: ActionContext) => {
   return {
     statusCode: 200,
     body: JSON.stringify({}),

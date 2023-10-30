@@ -8,9 +8,10 @@ import { Payment, PaymentStatuses } from '@Types/cart/Payment';
 import { CartApi } from '../apis/CartApi';
 import { getCurrency, getLocale } from '../utils/Request';
 import { Discount } from '@Types/cart/Discount';
+import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
-import { Guid } from '../utils/Guid';
+import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -115,6 +116,62 @@ export const addToCart: ActionHook = async (request: Request, actionContext: Act
   return response;
 };
 
+export const replicateCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const cartApi = getCartApi(request, actionContext);
+  const orderId = request.query?.['orderId'];
+
+  if (!orderId) {
+    return {
+      statusCode: 422,
+      body: JSON.stringify(`Order was not found.`),
+      sessionData: {
+        ...request.sessionData,
+      },
+    };
+  }
+
+  try {
+    const cart = await cartApi.replicateCart(orderId);
+
+    if (!cart) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify(`We could not replicate cart for order : "${orderId}".`),
+        sessionData: {
+          ...request.sessionData,
+        },
+      };
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(cart),
+      sessionData: {
+        ...request.sessionData,
+        cartId: cart.cartId,
+      },
+    };
+  } catch (error) {
+    if (error instanceof ExternalError) {
+      return {
+        statusCode: error.status,
+        body: JSON.stringify(error.message),
+        sessionData: {
+          ...request.sessionData,
+        },
+      };
+    }
+    const err = error as Error;
+    return {
+      statusCode: 400,
+      body: JSON.stringify(err.message),
+      sessionData: {
+        ...request.sessionData,
+      },
+    };
+  }
+};
+
 export const updateLineItem: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
 
@@ -191,13 +248,15 @@ export const updateCart: ActionHook = async (request: Request, actionContext: Ac
 };
 
 export const checkout: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  const locale = getLocale(request);
+
   const cartApi = getCartApi(request, actionContext);
+  const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
+
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
+  const order = await cartApi.order(cart);
 
-  const order = await cartApi.order(cart, { orderNumber: Guid.newGuid(false, ['xxxxxxxxyxxx', 'xxxx-xxxx-yxxx']) });
-
-  //const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, getLocale(request));
-  //emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
+  emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
 
   // Unset the cartId
   const cartId: string = undefined;
@@ -331,31 +390,6 @@ export const addPaymentByInvoice: ActionHook = async (request: Request, actionCo
 
   return response;
 };
-
-/*
-export const getPayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-
-  const id = 'fd9b52ff-204b-4986-b13d-b25f53ac3343';
-
-  const amount: any = {
-    centAmount: 1000,
-    currencyCode: 'EUR'
-  };
-
-  let payment = await cartApi.getPayment(id);
-
-  payment = await cartApi.updateOrderPayment(id, payment.body.version, PaymentStatuses.PENDING, 'Payment method', amount);
-
-  const response: Response = {
-    statusCode: 200,
-    body: JSON.stringify(payment),
-    sessionData: request.sessionData,
-  };
-
-  return response;
-}
-*/
 
 export const updatePayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);

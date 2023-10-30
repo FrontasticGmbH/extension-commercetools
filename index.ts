@@ -40,7 +40,7 @@ export default {
   ): Promise<DynamicPageSuccessResult | DynamicPageRedirectResult | null> => {
     // Identify static page
     const staticPageMatch = getPath(request)?.match(
-      /^\/(cart|checkout|wishlist|account|login|register|reset-password|thank-you)/,
+      /^\/(cart|checkout|wishlist|account|login|register|reset-password|thank-you)$/,
     );
     if (staticPageMatch) {
       return {
@@ -76,22 +76,8 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/search',
-            dataSourcePayload: {
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-              category: getPath(request),
-            },
-            pageMatchingPayload: {
-              query: result.query,
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-            },
+            dataSourcePayload: result,
+            pageMatchingPayload: result,
           };
         }
 
@@ -105,22 +91,8 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/category',
-            dataSourcePayload: {
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-              category: getPath(request),
-            },
-            pageMatchingPayload: {
-              totalItems: result.total,
-              items: result.items,
-              facets: result.facets,
-              previousCursor: result.previousCursor,
-              nextCursor: result.nextCursor,
-              category: getPath(request),
-            },
+            dataSourcePayload: result,
+            pageMatchingPayload: result,
           };
         }
 
@@ -202,40 +174,6 @@ export default {
                 },
               ],
             };
-      });
-    },
-
-    'frontastic/other-products': async (config: DataSourceConfiguration, context: DataSourceContext) => {
-      if (!context.hasOwnProperty('request')) {
-        throw new ValidationError({
-          message: `Request is not defined in context ${context}`,
-        });
-      }
-
-      const productApi = new ProductApi(
-        context.frontasticContext,
-        getLocale(context.request),
-        getCurrency(context.request),
-      );
-      const productQuery = ProductQueryFactory.queryFromParams(context.request, config);
-
-      const shuffleArray = (array: any) => {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          const temp = array[i];
-          array[i] = array[j];
-          array[j] = temp;
-        }
-        return array;
-      };
-
-      return await productApi.query(productQuery).then((queryResult) => {
-        return {
-          dataSourcePayload: {
-            ...queryResult,
-            items: shuffleArray(queryResult.items),
-          },
-        };
       });
     },
 

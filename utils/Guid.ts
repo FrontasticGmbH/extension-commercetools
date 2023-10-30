@@ -1,15 +1,12 @@
 import now from 'performance-now';
 export class Guid {
-  static newGuid = (
-    noHyphens?: boolean,
-    [regular, withHyphens] = ['xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx', 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'],
-  ) => {
+  static newGuid = (noHyphens?: boolean) => {
     let d = new Date().getTime();
     if (typeof now === 'function') {
       d += now();
     }
 
-    const shellGuid = noHyphens ? regular : withHyphens;
+    const shellGuid = noHyphens ? 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx' : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
 
     return shellGuid.replace(/[xy]/g, function (c) {
       const r = (d + Math.random() * 16) % 16 | 0;

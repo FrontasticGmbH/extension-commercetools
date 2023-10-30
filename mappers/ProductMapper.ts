@@ -149,7 +149,7 @@ export class ProductMapper {
     commercetoolsCategoryReferences.forEach((commercetoolsCategory) => {
       let category: Category = {
         categoryId: commercetoolsCategory.id,
-      } as any;
+      };
 
       if (commercetoolsCategory.obj) {
         category = ProductMapper.commercetoolsCategoryToCategory(commercetoolsCategory.obj, categoryIdField, locale);

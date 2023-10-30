@@ -84,9 +84,9 @@ export class AccountApi extends BaseApi {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
-    /*if (!account.confirmed) {
+    if (!account.confirmed) {
       account.confirmationToken = await this.getConfirmationToken(account);
-    }*/
+    }
 
     return account;
   };
@@ -154,6 +154,10 @@ export class AccountApi extends BaseApi {
 
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
+
+    if (!account.confirmed) {
+      account.confirmationToken = await this.getConfirmationToken(account);
+    }
 
     return account;
   };

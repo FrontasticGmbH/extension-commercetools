@@ -86,7 +86,7 @@ export class CartMapper {
           locale,
           defaultLocale,
         ),
-        totalPrice: ProductMapper.commercetoolsMoneyToMoney(commercetoolsLineItem.taxedPrice?.totalGross),
+        totalPrice: ProductMapper.commercetoolsMoneyToMoney(commercetoolsLineItem.totalPrice),
         variant: ProductMapper.commercetoolsProductVariantToVariant(commercetoolsLineItem.variant, locale),
         isGift:
           commercetoolsLineItem?.lineItemMode !== undefined && commercetoolsLineItem.lineItemMode === 'GiftLineItem',
@@ -188,6 +188,9 @@ export class CartMapper {
     return {
       ...shippingMethod,
       price: ProductMapper.commercetoolsMoneyToMoney(commercetoolsShippingInfo.price),
+      discounts:
+        commercetoolsShippingInfo.discountedPrice?.includedDiscounts?.map((discount) => discount.discountedAmount) ??
+        [],
     };
   };
 
