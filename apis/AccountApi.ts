@@ -84,9 +84,9 @@ export class AccountApi extends BaseApi {
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
 
-    if (!account.confirmed) {
+    /*if (!account.confirmed) {
       account.confirmationToken = await this.getConfirmationToken(account);
-    }
+    }*/
 
     return account;
   };
@@ -154,10 +154,6 @@ export class AccountApi extends BaseApi {
 
         throw new ExternalError({ status: error.code, message: error.message, body: error.body });
       });
-
-    if (!account.confirmed) {
-      account.confirmationToken = await this.getConfirmationToken(account);
-    }
 
     return account;
   };
@@ -251,6 +247,10 @@ export class AccountApi extends BaseApi {
       customerUpdateActions.push({ action: 'setLastName', lastName: account.lastName });
     }
 
+    if (account.email) {
+      customerUpdateActions.push({ action: 'changeEmail', email: account.email });
+    }
+
     if (account.salutation) {
       customerUpdateActions.push({ action: 'setSalutation', salutation: account.salutation });
     }
@@ -295,6 +295,56 @@ export class AccountApi extends BaseApi {
 
     if (address.isDefaultShippingAddress) {
       customerUpdateActions.push({ action: 'setDefaultShippingAddress', addressKey: addressData.key });
+    }
+
+    return await this.updateAccount(account, customerUpdateActions);
+  };
+
+  addShippingAddress: (account: Account, address: Address) => Promise<Account> = async (
+    account: Account,
+    address: Address,
+  ) => {
+    const customerUpdateActions: CustomerUpdateAction[] = [];
+
+    let addressData = AccountMapper.addressToCommercetoolsAddress(address);
+
+    if (addressData.id !== undefined) {
+      addressData = {
+        ...addressData,
+        id: undefined,
+      };
+    }
+
+    customerUpdateActions.push({ action: 'addAddress', address: addressData });
+    customerUpdateActions.push({ action: 'addShippingAddressId', addressKey: addressData.key });
+
+    if (address.isDefaultShippingAddress) {
+      customerUpdateActions.push({ action: 'setDefaultShippingAddress', addressKey: addressData.key });
+    }
+
+    return await this.updateAccount(account, customerUpdateActions);
+  };
+
+  addBillingAddress: (account: Account, address: Address) => Promise<Account> = async (
+    account: Account,
+    address: Address,
+  ) => {
+    const customerUpdateActions: CustomerUpdateAction[] = [];
+
+    let addressData = AccountMapper.addressToCommercetoolsAddress(address);
+
+    if (addressData.id !== undefined) {
+      addressData = {
+        ...addressData,
+        id: undefined,
+      };
+    }
+
+    customerUpdateActions.push({ action: 'addAddress', address: addressData });
+    customerUpdateActions.push({ action: 'addBillingAddressId', addressKey: addressData.key });
+
+    if (address.isDefaultBillingAddress) {
+      customerUpdateActions.push({ action: 'setDefaultBillingAddress', addressKey: addressData.key });
     }
 
     return await this.updateAccount(account, customerUpdateActions);

@@ -26,7 +26,7 @@ function fetchAccountFromSessionEnsureLoggedIn(request: Request): Account {
 async function fetchWishlist(request: Request, wishlistApi: WishlistApi) {
   if (request.sessionData?.wishlistId !== undefined) {
     try {
-      return await wishlistApi.getById(request.sessionData.wishlistId);
+      return await wishlistApi.getById(request.sessionData?.wishlistId);
     } catch (error) {
       console.info(`Error fetching the wishlist ${request.sessionData.wishlistId}, creating a new one. ${error}`);
     }
@@ -125,6 +125,23 @@ export const removeLineItem: ActionHook = async (request, actionContext) => {
     sessionData: {
       ...request.sessionData,
       wishlistId: updatedWishlist.wishlistId,
+    },
+  };
+};
+
+export const deleteWishlist: ActionHook = async (request, actionContext) => {
+  try {
+    const wishlistApi = getWishlistApi(request, actionContext);
+    const wishlist = await fetchWishlist(request, wishlistApi);
+    await wishlistApi.deleteWishlist(wishlist);
+  } catch (error) {}
+
+  return {
+    statusCode: 200,
+    body: '',
+    sessionData: {
+      ...request.sessionData,
+      wishlistId: undefined,
     },
   };
 };

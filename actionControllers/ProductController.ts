@@ -61,12 +61,14 @@ export const query: ActionHook = async (request: Request, actionContext: ActionC
 };
 
 export const queryCategories: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const productApi = getProductApi(request, actionContext);
+  const productApi = new ProductApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
 
   const categoryQuery: CategoryQuery = {
     limit: request.query?.limit ?? undefined,
     cursor: request.query?.cursor ?? undefined,
     slug: request.query?.slug ?? undefined,
+    parentId: request.query?.parentId ?? undefined,
+    format: request.query?.format ?? 'flat',
   };
 
   const queryResult = await productApi.queryCategories(categoryQuery);
@@ -74,9 +76,7 @@ export const queryCategories: ActionHook = async (request: Request, actionContex
   const response: Response = {
     statusCode: 200,
     body: JSON.stringify(queryResult),
-    sessionData: {
-      ...request.sessionData,
-    },
+    sessionData: request.sessionData,
   };
 
   return response;

@@ -25,6 +25,11 @@ export class ProductApi extends BaseApi {
 
     const facetDefinitions: FacetDefinition[] = [
       ...ProductMapper.commercetoolsProductTypesToFacetDefinitions(await this.getProductTypes(), locale),
+      // Include Category facet
+      {
+        attributeId: 'categories.id',
+        attributeType: 'text',
+      },
       // Include Scoped Price facet
       {
         attributeId: 'variants.scopedPrice.value',
@@ -35,6 +40,7 @@ export class ProductApi extends BaseApi {
         attributeId: 'variants.price',
         attributeType: 'money',
       },
+      // Include Scoped Price discount facet
       {
         attributeId: 'variants.scopedPriceDiscounted',
         attributeType: 'boolean',
@@ -76,7 +82,7 @@ export class ProductApi extends BaseApi {
         `categories.id: ${categoryIds.map((category) => {
           return `subtree("${category}")`;
         })}`,
-      );
+      );      
     }
 
     if (productQuery.filters !== undefined) {
@@ -133,6 +139,7 @@ export class ProductApi extends BaseApi {
         'filter.query': filterQuery.length > 0 ? filterQuery : undefined,
         [`text.${locale.language}`]: productQuery.query,
         expand: ['categories[*].ancestors[*]'],
+        fuzzy: true,
       },
     };
 
@@ -195,9 +202,9 @@ export class ProductApi extends BaseApi {
 
     // Category filter. Not included as commercetools product type.
     filterFields.push({
-      field: 'categoryIds',
+      field: 'categoryId',
       type: FilterFieldTypes.ENUM,
-      label: 'Category',
+      label: 'Category ID',
       values: await this.queryCategories({ limit: 250 }).then((result) => {
         return (result.items as Category[]).map((item) => {
           return {
@@ -236,31 +243,42 @@ export class ProductApi extends BaseApi {
       where.push(`slug(${locale.language}="${categoryQuery.slug}")`);
     }
 
+    if (categoryQuery.parentId) {
+      where.push(`parent(id="${categoryQuery.parentId}")`);
+    }
+
     const methodArgs = {
       queryArgs: {
         limit: limit,
         offset: this.getOffsetFromCursor(categoryQuery.cursor),
         where: where.length > 0 ? where : undefined,
-        expand: ['ancestors[*]'],
+        expand: ['ancestors[*]', 'parent'],
       },
     };
 
-    return await this.getCommercetoolsCategoryPagedQueryResponse(methodArgs).then((response) => {
-      const items = response.body.results.map((category) =>
-        ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
-      );
+    return await this.getCommercetoolsCategoryPagedQueryResponse(methodArgs)
+      .then((response) => {
+        const items =
+          categoryQuery.format === 'tree'
+            ? ProductMapper.commercetoolsCategoriesToTreeCategory(response.body.results, this.categoryIdField, locale)
+            : response.body.results.map((category) =>
+                ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
+              );
 
-      const result: Result = {
-        total: response.body.total,
-        items: items,
-        count: response.body.count,
-        previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
-        nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
-        query: categoryQuery,
-      };
+        const result: Result = {
+          total: response.body.total,
+          items: items,
+          count: response.body.count,
+          previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
+          nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
+          query: categoryQuery,
+        };
 
-      return result;
-    });
+        return result;
+      })
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
   };
 
   protected getOffsetFromCursor = (cursor: string) => {

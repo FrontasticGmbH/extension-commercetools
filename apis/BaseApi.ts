@@ -11,17 +11,19 @@ import { Token } from '@Types/Token';
 import { tokenHasExpired } from '../utils/Token';
 import crypto from 'crypto';
 
-const defaultCurrency = 'EUR';
+const defaultCurrency = 'USD';
 
 const localeRegex =
   /^(?<language>[a-z]{2,})(?:_(?<territory>[A-Z0-9]{2,}))?(?:\.(?<codeset>[A-Z0-9_+-]+))?(?:@(?<modifier>[A-Za-z]+))?$/;
 
 const languageToTerritory = {
   en: 'GB',
+  en_US: 'US',
 };
 
 const modifierToCurrency = {
   euro: 'EUR',
+  usd: 'USD',
 };
 
 const territoryToCurrency = {
@@ -416,7 +418,7 @@ export abstract class BaseApi {
     this.locale = locale !== null ? locale : this.defaultLocale;
     this.currency = currency;
 
-    const engine = 'commercetools';
+    const engine = 'COMMERCETOOLS';
     this.clientSettings = getConfig(frontasticContext, engine, this.locale);
 
     this.environment = frontasticContext.environment;

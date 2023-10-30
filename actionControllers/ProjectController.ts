@@ -11,7 +11,7 @@ function getProjectApi(request: Request, actionContext: ActionContext) {
 export const getProjectSettings: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const projectApi = getProjectApi(request, actionContext);
 
-  const project = await projectApi.getProjectSettings();
+  const project = await projectApi.getProjectSettings(actionContext.frontasticContext);
 
   const response: Response = {
     statusCode: 200,

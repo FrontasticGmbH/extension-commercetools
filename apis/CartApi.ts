@@ -15,15 +15,17 @@ import {
   CartSetShippingAddressAction,
   CartSetShippingMethodAction,
   CartUpdate,
+  OrderState,
   OrderFromCartDraft,
+  OrderUpdateAction,
   PaymentDraft,
+  PaymentState,
   PaymentUpdateAction,
 } from '@commercetools/platform-sdk';
 import { CartMapper } from '../mappers/CartMapper';
 import { LineItem } from '@Types/cart/LineItem';
 import { Address } from '@Types/account/Address';
 import { Order } from '@Types/cart/Order';
-import { Guid } from '../utils/Guid';
 import { BaseApi } from './BaseApi';
 import { ShippingMethod } from '@Types/cart/ShippingMethod';
 import { Locale } from '../Locale';
@@ -45,27 +47,6 @@ export class CartApi extends BaseApi {
     super(frontasticContext, locale, currency);
     this.productApi = new ProductApi(frontasticContext, locale, currency);
   }
-
-  replicateCart: (orderId: string) => Promise<Cart> = async (orderId: string) => {
-    const locale = await this.getCommercetoolsLocal();
-    const response = await this.requestBuilder()
-      .carts()
-      .replicate()
-      .post({
-        body: {
-          reference: {
-            id: orderId,
-            typeId: 'order',
-          },
-        },
-      })
-      .execute()
-      .catch((error) => {
-        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
-      });
-
-    return await this.buildCartWithAvailableShippingMethods(response.body, locale);
-  };
 
   getForUser: (account: Account) => Promise<Cart> = async (account: Account) => {
     const locale = await this.getCommercetoolsLocal();
@@ -337,13 +318,13 @@ export class CartApi extends BaseApi {
     return this.buildCartWithAvailableShippingMethods(commercetoolsCart, locale);
   };
 
-  order: (cart: Cart) => Promise<Order> = async (cart: Cart) => {
+  order: (cart: Cart, data: { orderNumber: string }) => Promise<Order> = async (cart, { orderNumber }) => {
     const locale = await this.getCommercetoolsLocal();
 
     const orderFromCartDraft: OrderFromCartDraft = {
       id: cart.cartId,
       version: +cart.cartVersion,
-      orderNumber: Guid.newGuid(),
+      orderNumber,
     };
 
     if (!isReadyForCheckout(cart)) {
@@ -563,6 +544,70 @@ export class CartApi extends BaseApi {
       .execute();
   };
 
+  updateOrderByNumber: (
+    orderNumber: string,
+    payload: Pick<Order, 'orderState' | 'payments'> & { paymentState?: PaymentState },
+  ) => Promise<Order> = async (orderNumber, payload) => {
+    const locale = await this.getCommercetoolsLocal();
+
+    const order = await this.requestBuilder()
+      .orders()
+      .withOrderNumber({ orderNumber })
+      .get()
+      .execute()
+      .then((res) => res.body);
+
+    const orderUpdateActions = [] as OrderUpdateAction[];
+
+    if (payload.orderState) {
+      orderUpdateActions.push({
+        action: 'changeOrderState',
+        orderState: payload.orderState as OrderState,
+      });
+    }
+
+    if (payload.payments) {
+      payload.payments.forEach((payment) => {
+        orderUpdateActions.push({
+          action: 'addPayment',
+          payment: {
+            typeId: 'payment',
+            id: payment.id,
+          },
+        });
+      });
+    }
+
+    if (payload.paymentState) {
+      orderUpdateActions.push({
+        action: 'changePaymentState',
+        paymentState: payload.paymentState,
+      });
+    }
+
+    return this.requestBuilder()
+      .orders()
+      .withOrderNumber({ orderNumber })
+      .post({ body: { version: order.version, actions: orderUpdateActions } })
+      .execute()
+      .then((response) => CartMapper.commercetoolsOrderToOrder(response.body, locale, this.defaultLocale))
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
+  };
+
+  createPayment: (payload: PaymentDraft) => Promise<Payment> = async (payload) => {
+    const locale = await this.getCommercetoolsLocal();
+
+    const payment = this.requestBuilder()
+      .payments()
+      .post({ body: payload })
+      .execute()
+      .then((response) => CartMapper.commercetoolsPaymentToPayment(response.body, locale));
+
+    return payment;
+  };
+
   updateOrderPayment: (paymentId: string, paymentDraft: Payment) => Promise<any> = async (
     paymentId: string,
     paymentDraft: Payment,
@@ -774,10 +819,8 @@ export class CartApi extends BaseApi {
     // }
 
     const propertyList = [
-      'customerId',
       'customerEmail',
       'customerGroup',
-      'anonymousId',
       'store',
       'inventoryMode',
       'taxMode',
@@ -792,6 +835,9 @@ export class CartApi extends BaseApi {
       'shippingRateInput',
       'itemShippingAddresses',
     ];
+
+    if (primaryCommercetoolsCart.customerId) cartDraft['customerId' as string] = primaryCommercetoolsCart.customerId;
+    else cartDraft['anonymousId' as string] = primaryCommercetoolsCart.anonymousId;
 
     for (const key of propertyList) {
       if (primaryCommercetoolsCart.hasOwnProperty(key)) {
