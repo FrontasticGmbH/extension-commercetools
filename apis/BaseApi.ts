@@ -22,6 +22,7 @@ const languageToTerritory = {
 };
 
 const modifierToCurrency = {
+  dollar: 'USD',
   euro: 'EUR',
   usd: 'USD',
 };
