@@ -4,7 +4,7 @@ import {
   AttributeDefinition as CommercetoolsAttributeDefinition,
   AttributeEnumType,
   AttributeLocalizedEnumType,
-  AttributeSetType,  
+  AttributeSetType,
   Category as CommercetoolsCategory,
   CategoryReference,
   FacetResults as CommercetoolsFacetResults,

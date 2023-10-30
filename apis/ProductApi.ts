@@ -82,7 +82,7 @@ export class ProductApi extends BaseApi {
         `categories.id: ${categoryIds.map((category) => {
           return `subtree("${category}")`;
         })}`,
-      );      
+      );
     }
 
     if (productQuery.filters !== undefined) {
