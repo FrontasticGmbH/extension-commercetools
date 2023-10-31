@@ -205,7 +205,7 @@ export class ProductApi extends BaseApi {
       field: 'categoryId',
       type: FilterFieldTypes.ENUM,
       label: 'Category ID',
-      values: await this.queryCategories({ limit: 250 }).then((result) => {
+      values: await this.queryCategories({ limit: 250, format: 'tree' }).then((result) => {
         return (result.items as Category[]).map((item) => {
           return {
             value: item.categoryId,
@@ -214,7 +214,7 @@ export class ProductApi extends BaseApi {
         });
       }),
     });
-
+    /*
     // Variants price filter. Not included as commercetools product type.
     filterFields.push({
       field: 'variants.price',
@@ -228,7 +228,7 @@ export class ProductApi extends BaseApi {
       type: FilterFieldTypes.MONEY,
       label: 'Variants scoped price', // TODO: localize label
     });
-
+*/
     return filterFields;
   };
 
