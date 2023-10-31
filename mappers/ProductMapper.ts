@@ -172,13 +172,13 @@ export class ProductMapper {
       name: commercetoolsCategory.name?.[locale.language] ?? undefined,
       slug: commercetoolsCategory.slug?.[locale.language] ?? undefined,
       depth: commercetoolsCategory.ancestors.length,
-      subCategories: (commercetoolsCategory as any).subCategories.map((subCategory: CommercetoolsCategory) =>
+      subCategories: (commercetoolsCategory as any).subCategories?.map((subCategory: CommercetoolsCategory) =>
         ProductMapper.commercetoolsCategoryToCategory(subCategory, categoryIdField, locale),
       ),
       _url:
         commercetoolsCategory.ancestors.length > 0
           ? `/${commercetoolsCategory.ancestors
-              .map((ancestor) => {
+              ?.map((ancestor) => {
                 return ancestor.obj?.slug?.[locale.language] ?? ancestor.id;
               })
               .join('/')}/${commercetoolsCategory.slug?.[locale.language] ?? commercetoolsCategory.id}`
