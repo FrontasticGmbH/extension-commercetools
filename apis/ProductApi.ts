@@ -214,7 +214,7 @@ export class ProductApi extends BaseApi {
         });
       }),
     });
-    /*
+
     // Variants price filter. Not included as commercetools product type.
     filterFields.push({
       field: 'variants.price',
@@ -228,7 +228,7 @@ export class ProductApi extends BaseApi {
       type: FilterFieldTypes.MONEY,
       label: 'Variants scoped price', // TODO: localize label
     });
-*/
+
     return filterFields;
   };
 
