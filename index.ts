@@ -76,8 +76,22 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/search',
-            dataSourcePayload: result,
-            pageMatchingPayload: result,
+            dataSourcePayload: {
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
+              category: getPath(request),
+            },
+            pageMatchingPayload: {
+              query: result.query,
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
+            },
           };
         }
 
@@ -91,8 +105,22 @@ export default {
         if (result) {
           return {
             dynamicPageType: 'frontastic/category',
-            dataSourcePayload: result,
-            pageMatchingPayload: result,
+            dataSourcePayload: {
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
+              category: getPath(request),
+            },
+            pageMatchingPayload: {
+              totalItems: result.total,
+              items: result.items,
+              facets: result.facets,
+              previousCursor: result.previousCursor,
+              nextCursor: result.nextCursor,
+              category: getPath(request),
+            },
           };
         }
 
