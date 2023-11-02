@@ -202,7 +202,7 @@ export class ProductApi extends BaseApi {
 
     // Category filter. Not included as commercetools product type.
     filterFields.push({
-      field: 'categoryId',
+      field: 'categoryIds',
       type: FilterFieldTypes.ENUM,
       label: 'Category',
       values: await this.queryCategories({ limit: 250, format: 'tree' }).then((result) => {
