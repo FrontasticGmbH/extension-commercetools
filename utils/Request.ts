@@ -28,6 +28,10 @@ export const getCurrency = (request: Request): string | null => {
   return null;
 };
 
+export const getCountry = (locale: string) => {
+  return { de_DE: 'DE', en_US: 'US', 'de_DE@EUR': 'DE', 'en_US@USD': 'US' }[locale];
+};
+
 const getHeader = (request: Request, header: string): string | null => {
   if (header in request.headers) {
     const foundHeader = request.headers[header];

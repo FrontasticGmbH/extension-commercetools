@@ -12,6 +12,7 @@ import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
+import { Guid } from '@Commerce-commercetools/utils/Guid';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -254,7 +255,8 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
 
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
-  const order = await cartApi.order(cart);
+
+  const order = await cartApi.order(cart, { orderNumber: Guid.newGuid(false, ['xxxxxxxxyxxx', 'xxxx-xxxx-yxxx']) });
 
   emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
 
