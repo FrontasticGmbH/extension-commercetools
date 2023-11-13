@@ -20,8 +20,9 @@ import {
 } from '@Commerce-commercetools/actionControllers/AccountController';
 import queryParamsToStates from '@Commerce-commercetools/utils/queryParamsToState';
 import queryParamsToIds from '@Commerce-commercetools/utils/queryParamsToIds';
-import { SortAttributes, SortOrder } from '../../../b2b/types/query';
+import { SortAttributes } from '../../../b2b/types/query';
 import handleError from '@Commerce-commercetools/utils/handleError';
+import { SortOrder } from '@Types/query/ProductQuery';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
