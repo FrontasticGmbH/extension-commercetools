@@ -3,15 +3,15 @@ import {
   BaseAddress as CommercetoolsAddress,
   Cart as CommercetoolsCart,
   DiscountCodeInfo as CommercetoolsDiscountCodeInfo,
-  DiscountedLineItemPriceForQuantity as CommercetoolsDiscountedLineItemPriceForQuantity,
   DiscountedLineItemPortion as CommercetoolsDiscountedLineItemPortion,
+  DiscountedLineItemPriceForQuantity as CommercetoolsDiscountedLineItemPriceForQuantity,
   LineItem as CommercetoolsLineItem,
   Order as CommercetoolsOrder,
   Payment as CommercetoolsPayment,
   PaymentInfo as CommercetoolsPaymentInfo,
+  ShipmentState as CommercetoolsShipmentState,
   ShippingInfo as CommercetoolsShippingInfo,
   ShippingMethod as CommercetoolsShippingMethod,
-  ShipmentState as CommercetoolsShipmentState,
   TaxedPrice as CommercetoolsTaxedPrice,
   ZoneRate as CommercetoolsZoneRate,
 } from '@commercetools/platform-sdk';
@@ -136,15 +136,16 @@ export class CartMapper {
     } as CommercetoolsAddress;
   };
 
-  static commercetoolsOrderToOrder: (
+  static orderNumber: (commercetoolsOrder: CommercetoolsOrder, locale: Locale, defaultLocale: string) => Order = (
     commercetoolsOrder: CommercetoolsOrder,
     locale: Locale,
     defaultLocale: string,
-  ) => Order = (commercetoolsOrder: CommercetoolsOrder, locale: Locale, defaultLocale: string) => {
+  ) => {
     return {
       cartId: commercetoolsOrder.id,
       orderState: commercetoolsOrder.orderState,
-      orderId: commercetoolsOrder.orderNumber,
+      orderId: commercetoolsOrder.id,
+      orderNumber: commercetoolsOrder.orderNumber,
       orderVersion: commercetoolsOrder.version.toString(),
       createdAt: new Date(commercetoolsOrder.createdAt),
       lineItems: CartMapper.commercetoolsLineItemsToLineItems(commercetoolsOrder.lineItems, locale, defaultLocale),
