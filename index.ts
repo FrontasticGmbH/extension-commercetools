@@ -18,13 +18,13 @@ import { getCurrency, getLocale, getPath } from './utils/Request';
 import { ProductRouter } from './utils/ProductRouter';
 import { Product } from '@Types/product/Product';
 import { SearchRouter } from './utils/SearchRouter';
-import { Result } from '@Types/product/Result';
 import { CategoryRouter } from './utils/CategoryRouter';
 import { ProductApi } from './apis/ProductApi';
 import { ProductQueryFactory } from './utils/ProductQueryFactory';
 import { ValidationError } from './utils/Errors';
+import { ProductPaginatedResult } from '@Types/result';
 
-const getPreviewPayload = (queryResult: Result) => {
+const getPreviewPayload = (queryResult: ProductPaginatedResult) => {
   return (queryResult.items as Product[]).map((product): DataSourcePreviewPayloadElement => {
     return {
       title: product.name,
@@ -72,7 +72,7 @@ export default {
 
     // Identify Search
     if (SearchRouter.identifyFrom(request)) {
-      return SearchRouter.loadFor(request, context.frontasticContext).then((result: Result) => {
+      return SearchRouter.loadFor(request, context.frontasticContext).then((result: ProductPaginatedResult) => {
         if (result) {
           return {
             dynamicPageType: 'frontastic/search',
@@ -87,7 +87,7 @@ export default {
     }
 
     if (CategoryRouter.identifyFrom(request)) {
-      return CategoryRouter.loadFor(request, context.frontasticContext).then((result: Result) => {
+      return CategoryRouter.loadFor(request, context.frontasticContext).then((result: ProductPaginatedResult) => {
         if (result) {
           return {
             dynamicPageType: 'frontastic/category',
