@@ -1,4 +1,3 @@
-import { Result } from '@Types/product/Result';
 import { ProductMapper } from '../mappers/ProductMapper';
 import { ProductQuery } from '@Types/query/ProductQuery';
 import { Product } from '@Types/product/Product';
@@ -11,9 +10,11 @@ import { CategoryQuery } from '@Types/query/CategoryQuery';
 import { Category } from '@Types/product/Category';
 import { FacetDefinition } from '@Types/product/FacetDefinition';
 import { ExternalError } from '../utils/Errors';
+import { ProductPaginatedResult } from '@Types/result';
+import { PaginatedResult } from '../../../b2b/types/result';
 
 export class ProductApi extends BaseApi {
-  query: (productQuery: ProductQuery) => Promise<Result> = async (productQuery: ProductQuery) => {
+  query: (productQuery: ProductQuery) => Promise<ProductPaginatedResult> = async (productQuery: ProductQuery) => {
     const locale = await this.getCommercetoolsLocal();
 
     // TODO: get default from constant
@@ -159,7 +160,7 @@ export class ProductApi extends BaseApi {
           ),
         );
 
-        const result: Result = {
+        const result: ProductPaginatedResult = {
           total: response.body.total,
           items: items,
           count: response.body.count,
@@ -232,7 +233,9 @@ export class ProductApi extends BaseApi {
     return filterFields;
   };
 
-  queryCategories: (categoryQuery: CategoryQuery) => Promise<Result> = async (categoryQuery: CategoryQuery) => {
+  queryCategories: (categoryQuery: CategoryQuery) => Promise<PaginatedResult<Category>> = async (
+    categoryQuery: CategoryQuery,
+  ) => {
     const locale = await this.getCommercetoolsLocal();
 
     // TODO: get default from constant
@@ -265,14 +268,15 @@ export class ProductApi extends BaseApi {
                 ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
               );
 
-        const result: Result = {
-          total: response.body.total,
-          items: items,
-          count: response.body.count,
-          previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
-          nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
-          query: categoryQuery,
-        };
+
+      const result: PaginatedResult<Category> = {
+        total: response.body.total,
+        items: items,
+        count: response.body.count,
+        previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
+        nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
+        query: categoryQuery,
+      };
 
         return result;
       })
