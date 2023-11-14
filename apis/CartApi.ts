@@ -39,10 +39,10 @@ import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { Context } from '@frontastic/extension-types';
 import { ProductApi } from './ProductApi';
-import { OrderQuery } from '../../../b2b/types/cart';
-import { PaginatedResult } from '../../../b2b/types/result';
 import { ProductMapper } from '@Commerce-commercetools/mappers/ProductMapper';
 import { getOffsetFromCursor } from '@Commerce-commercetools/utils/Pagination';
+import { PaginatedResult } from '@Types/result';
+import { OrderQuery } from '@Types/cart';
 
 export class CartApi extends BaseApi {
   productApi: ProductApi;

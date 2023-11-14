@@ -13,7 +13,6 @@ import { AccountAuthenticationError } from '../errors/AccountAuthenticationError
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 import { Guid } from '@Commerce-commercetools/utils/Guid';
-import { OrderQuery } from '../../../b2b/types/cart';
 import {
   assertIsAuthenticated,
   fetchAccountFromSession,
@@ -23,6 +22,7 @@ import queryParamsToIds from '@Commerce-commercetools/utils/queryParamsToIds';
 import { SortAttributes } from '../../../b2b/types/query';
 import handleError from '@Commerce-commercetools/utils/handleError';
 import { SortOrder } from '@Types/query/ProductQuery';
+import { OrderQuery } from '@Types/cart';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 

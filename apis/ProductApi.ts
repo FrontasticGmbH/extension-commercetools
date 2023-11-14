@@ -10,8 +10,7 @@ import { CategoryQuery } from '@Types/query/CategoryQuery';
 import { Category } from '@Types/product/Category';
 import { FacetDefinition } from '@Types/product/FacetDefinition';
 import { ExternalError } from '../utils/Errors';
-import { ProductPaginatedResult } from '@Types/result';
-import { PaginatedResult } from '../../../b2b/types/result';
+import { PaginatedResult, ProductPaginatedResult } from '@Types/result';
 
 export class ProductApi extends BaseApi {
   query: (productQuery: ProductQuery) => Promise<ProductPaginatedResult> = async (productQuery: ProductQuery) => {
@@ -268,15 +267,14 @@ export class ProductApi extends BaseApi {
                 ProductMapper.commercetoolsCategoryToCategory(category, this.categoryIdField, locale),
               );
 
-
-      const result: PaginatedResult<Category> = {
-        total: response.body.total,
-        items: items,
-        count: response.body.count,
-        previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
-        nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
-        query: categoryQuery,
-      };
+        const result: PaginatedResult<Category> = {
+          total: response.body.total,
+          items: items,
+          count: response.body.count,
+          previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
+          nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
+          query: categoryQuery,
+        };
 
         return result;
       })
