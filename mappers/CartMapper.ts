@@ -136,11 +136,11 @@ export class CartMapper {
     } as CommercetoolsAddress;
   };
 
-  static orderNumber: (commercetoolsOrder: CommercetoolsOrder, locale: Locale, defaultLocale: string) => Order = (
+  static commercetoolsOrderToOrder: (
     commercetoolsOrder: CommercetoolsOrder,
     locale: Locale,
     defaultLocale: string,
-  ) => {
+  ) => Order = (commercetoolsOrder: CommercetoolsOrder, locale: Locale, defaultLocale: string) => {
     return {
       cartId: commercetoolsOrder.id,
       orderState: commercetoolsOrder.orderState,
