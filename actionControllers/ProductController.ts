@@ -67,6 +67,8 @@ export const queryCategories: ActionHook = async (request: Request, actionContex
     limit: request.query?.limit ?? undefined,
     cursor: request.query?.cursor ?? undefined,
     slug: request.query?.slug ?? undefined,
+    parentId: request.query?.parentId ?? undefined,
+    format: request.query?.format ?? 'flat',
   };
 
   const queryResult = await productApi.queryCategories(categoryQuery);

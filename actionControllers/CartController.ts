@@ -12,6 +12,7 @@ import { EmailApiFactory } from '../utils/EmailApiFactory';
 import { AccountAuthenticationError } from '../errors/AccountAuthenticationError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
+import { Guid } from '@Commerce-commercetools/utils/Guid';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -69,6 +70,19 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
       message: errorResponse.message,
     };
   }
+};
+
+export const resetCart: ActionHook = async (request: Request) => {
+  const response: Response = {
+    statusCode: 200,
+    body: null,
+    sessionData: {
+      ...request.sessionData,
+      cartId: null,
+    },
+  };
+
+  return response;
 };
 
 export const addToCart: ActionHook = async (request: Request, actionContext: ActionContext) => {
@@ -241,7 +255,8 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   const emailApi = EmailApiFactory.getDefaultApi(actionContext.frontasticContext, locale);
 
   const cart = await updateCartFromRequest(cartApi, request, actionContext);
-  const order = await cartApi.order(cart);
+
+  const order = await cartApi.order(cart, { orderNumber: Guid.newGuid(false, ['xxxxxxxxyxxx', 'xxxx-xxxx-yxxx']) });
 
   emailApi.sendOrderConfirmationEmail({ ...order, email: order.email || cart.email });
 
@@ -250,7 +265,7 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
 
   const response: Response = {
     statusCode: 200,
-    body: JSON.stringify(cart),
+    body: JSON.stringify(order),
     sessionData: {
       ...request.sessionData,
       cartId,
@@ -377,31 +392,6 @@ export const addPaymentByInvoice: ActionHook = async (request: Request, actionCo
 
   return response;
 };
-
-/*
-export const getPayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
-  const cartApi = new CartApi(actionContext.frontasticContext, getLocale(request));
-
-  const id = 'fd9b52ff-204b-4986-b13d-b25f53ac3343';
-
-  const amount: any = {
-    centAmount: 1000,
-    currencyCode: 'EUR'
-  };
-
-  let payment = await cartApi.getPayment(id);
-
-  payment = await cartApi.updateOrderPayment(id, payment.body.version, PaymentStatuses.PENDING, 'Payment method', amount);
-
-  const response: Response = {
-    statusCode: 200,
-    body: JSON.stringify(payment),
-    sessionData: request.sessionData,
-  };
-
-  return response;
-}
-*/
 
 export const updatePayment: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);

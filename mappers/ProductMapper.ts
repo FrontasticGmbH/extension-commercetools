@@ -5,7 +5,6 @@ import {
   AttributeEnumType,
   AttributeLocalizedEnumType,
   AttributeSetType,
-  AttributeType,
   Category as CommercetoolsCategory,
   CategoryReference,
   FacetResults as CommercetoolsFacetResults,
@@ -118,7 +117,9 @@ export class ProductMapper {
       price: price,
       discountedPrice: discountedPrice,
       discounts: discounts,
-      isOnStock: commercetoolsVariant.availability?.isOnStock || undefined,
+      isOnStock: commercetoolsVariant.availability?.isOnStock,
+      restockableInDays: commercetoolsVariant.availability?.restockableInDays,
+      availableQuantity: commercetoolsVariant.availability?.availableQuantity,
     } as Variant;
   };
 
@@ -146,11 +147,15 @@ export class ProductMapper {
     const categories: Category[] = [];
 
     commercetoolsCategoryReferences.forEach((commercetoolsCategory) => {
+      let category: Category = {
+        categoryId: commercetoolsCategory.id,
+      };
+
       if (commercetoolsCategory.obj) {
-        categories.push(
-          ProductMapper.commercetoolsCategoryToCategory(commercetoolsCategory.obj, categoryIdField, locale),
-        );
+        category = ProductMapper.commercetoolsCategoryToCategory(commercetoolsCategory.obj, categoryIdField, locale);
       }
+
+      categories.push(category);
     });
 
     return categories;
@@ -163,19 +168,46 @@ export class ProductMapper {
   ) => Category = (commercetoolsCategory: CommercetoolsCategory, categoryIdField: string, locale: Locale) => {
     return {
       categoryId: commercetoolsCategory?.[categoryIdField],
+      parentId: commercetoolsCategory.parent?.id,
       name: commercetoolsCategory.name?.[locale.language] ?? undefined,
       slug: commercetoolsCategory.slug?.[locale.language] ?? undefined,
       depth: commercetoolsCategory.ancestors.length,
+      subCategories: (commercetoolsCategory as any).subCategories?.map((subCategory: CommercetoolsCategory) =>
+        ProductMapper.commercetoolsCategoryToCategory(subCategory, categoryIdField, locale),
+      ),
       _url:
         commercetoolsCategory.ancestors.length > 0
           ? `/${commercetoolsCategory.ancestors
-              .map((ancestor) => {
-                return ancestor?.obj?.slug?.[locale.language];
+              ?.map((ancestor) => {
+                return ancestor.obj?.slug?.[locale.language] ?? ancestor.id;
               })
-              .join('/')}/${commercetoolsCategory?.slug?.[locale.language]}`
-          : `/${commercetoolsCategory?.slug?.[locale.language]}`,
+              .join('/')}/${commercetoolsCategory.slug?.[locale.language] ?? commercetoolsCategory.id}`
+          : `/${commercetoolsCategory.slug?.[locale.language] ?? commercetoolsCategory.id}`,
     };
   };
+
+  static commercetoolsCategoriesToTreeCategory(
+    commercetoolsCategories: CommercetoolsCategory[],
+    categoryIdField: string,
+    locale: Locale,
+  ) {
+    const nodes = {};
+
+    for (const category of commercetoolsCategories) {
+      (category as CommercetoolsCategory & { subCategories: CommercetoolsCategory[] }).subCategories = [];
+      nodes[category.id] = category;
+    }
+
+    for (const category of commercetoolsCategories) {
+      if (!category.parent?.id) continue;
+
+      nodes[category.parent.id].subCategories.push(category);
+    }
+
+    return commercetoolsCategories
+      .filter((category) => category.ancestors.length === 0)
+      .map((category) => this.commercetoolsCategoryToCategory(category, categoryIdField, locale));
+  }
 
   static extractAttributeValue(commercetoolsAttributeValue: unknown, locale: Locale): unknown {
     if (commercetoolsAttributeValue['key'] !== undefined && commercetoolsAttributeValue['label'] !== undefined) {
@@ -346,6 +378,7 @@ export class ProductMapper {
         if (!attribute.isSearchable) {
           return;
         }
+
         const facetDefinition: FacetDefinition = {
           attributeType: attribute.type.name,
           attributeId: `variants.attributes.${attribute.name}`,

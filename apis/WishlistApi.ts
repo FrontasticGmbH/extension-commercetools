@@ -150,6 +150,21 @@ export class WishlistApi extends BaseApi {
       });
   };
 
+  deleteWishlist = async (wishlist: Wishlist) => {
+    await this.requestBuilder()
+      .shoppingLists()
+      .withId({ ID: wishlist.wishlistId })
+      .delete({
+        queryArgs: {
+          version: +wishlist.wishlistVersion,
+        },
+      })
+      .execute()
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
+  };
+
   updateLineItemCount = async (wishlist: Wishlist, lineItemId: string, count: number) => {
     const locale = await this.getCommercetoolsLocal();
 

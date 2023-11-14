@@ -406,11 +406,53 @@ export const addAddress: ActionHook = async (request: Request, actionContext: Ac
 
   let account = fetchAccountFromSession(request);
 
-  const address: Address = JSON.parse(request.body);
+  const address: Address = JSON.parse(request.body).address;
 
   const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
 
   account = await accountApi.addAddress(account, address);
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(account),
+    sessionData: {
+      ...request.sessionData,
+      account,
+    },
+  } as Response;
+};
+
+export const addShippingAddress: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  assertIsAuthenticated(request);
+
+  let account = fetchAccountFromSession(request);
+
+  const address: Address = JSON.parse(request.body).address;
+
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
+
+  account = await accountApi.addShippingAddress(account, address);
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(account),
+    sessionData: {
+      ...request.sessionData,
+      account,
+    },
+  } as Response;
+};
+
+export const addBillingAddress: ActionHook = async (request: Request, actionContext: ActionContext) => {
+  assertIsAuthenticated(request);
+
+  let account = fetchAccountFromSession(request);
+
+  const address: Address = JSON.parse(request.body).address;
+
+  const accountApi = new AccountApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
+
+  account = await accountApi.addBillingAddress(account, address);
 
   return {
     statusCode: 200,

@@ -2,6 +2,7 @@ import { BaseAddress, Customer as commercetoolsCustomer } from '@commercetools/p
 import { Locale } from '../Locale';
 import { Account } from '@Types/account/Account';
 import { Address } from '@Types/account/Address';
+import { Guid } from '@Commerce-commercetools/utils/Guid';
 
 export class AccountMapper {
   static commercetoolsCustomerToAccount: (commercetoolsCustomer: commercetoolsCustomer, locale: Locale) => Account = (
@@ -40,7 +41,9 @@ export class AccountMapper {
           state: commercetoolsAddress.state ?? undefined,
           phone: commercetoolsAddress.phone ?? undefined,
           isDefaultBillingAddress: commercetoolsAddress.id === commercetoolsCustomer.defaultBillingAddressId,
+          isBillingAddress: commercetoolsCustomer.billingAddressIds.includes(commercetoolsAddress.id),
           isDefaultShippingAddress: commercetoolsAddress.id === commercetoolsCustomer.defaultShippingAddressId,
+          isShippingAddress: commercetoolsCustomer.shippingAddressIds.includes(commercetoolsAddress.id),
         } as Address);
       });
 
@@ -49,6 +52,8 @@ export class AccountMapper {
 
   static addressToCommercetoolsAddress: (address: Address) => BaseAddress = (address: Address) => {
     return {
+      id: address.addressId,
+      key: Guid.newGuid(),
       salutation: address.salutation,
       firstName: address.firstName,
       lastName: address.lastName,
