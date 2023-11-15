@@ -523,6 +523,7 @@ export const queryOrders: ActionHook = async (request, actionContext) => {
       limit: request.query?.limit ?? undefined,
       cursor: request.query?.cursor ?? undefined,
       orderIds: queryParamsToIds('orderIds', request.query),
+      orderNumbers: queryParamsToIds('orderNumbers', request.query),
       orderState: queryParamsToStates('orderStates', request.query),
       sortAttributes: queryParamsToSortAttributes(request.query),
       query: request.query?.query ?? undefined,

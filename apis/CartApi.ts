@@ -959,9 +959,15 @@ export class CartApi extends BaseApi {
     }
 
     const whereClause = [`customerId="${orderQuery.accountId}"`];
+
     if (orderQuery.orderIds !== undefined && orderQuery.orderIds.length !== 0) {
-      whereClause.push(`orderNumber in ("${orderQuery.orderIds.join('","')}")`);
+      whereClause.push(`id in ("${orderQuery.orderIds.join('","')}")`);
     }
+
+    if (orderQuery.orderNumbers !== undefined && orderQuery.orderNumbers.length !== 0) {
+      whereClause.push(`orderNumber in ("${orderQuery.orderNumbers.join('","')}")`);
+    }
+
     if (orderQuery.orderState !== undefined && orderQuery.orderState.length > 0) {
       whereClause.push(`orderState in ("${orderQuery.orderState.join('","')}")`);
     }
