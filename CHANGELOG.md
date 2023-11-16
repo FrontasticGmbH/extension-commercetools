@@ -1,4 +1,11 @@
 
+## Version 1.8.0 (2023-11-16)
+
+** New Features and Improvements **
+
+- Added price filters to searchable attributes
+- Cleaned up cart and wishlist when customer logged out
+
 ## Version 1.7.0 (2023-09-27)
 
 ** New Features and Improvements **
