@@ -13,11 +13,32 @@ import { AccountAuthenticationError } from '../errors/AccountAuthenticationError
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 import { Guid } from '@Commerce-commercetools/utils/Guid';
+import queryParamsToStates from '@Commerce-commercetools/utils/queryParamsToState';
+import queryParamsToIds from '@Commerce-commercetools/utils/queryParamsToIds';
+import handleError from '@Commerce-commercetools/utils/handleError';
+import { SortAttributes, SortOrder } from '@Types/query/ProductQuery';
+import { OrderQuery } from '@Types/cart';
+import { fetchAccountFromSession } from '@Commerce-commercetools/utils/fetchAccountFromSession';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
 function getCartApi(request: Request, actionContext: ActionContext) {
   return new CartApi(actionContext.frontasticContext, getLocale(request), getCurrency(request));
+}
+
+function queryParamsToSortAttributes(queryParams: any) {
+  const sortAttributes: SortAttributes = {};
+
+  if (queryParams.sortAttributes) {
+    let sortAttribute;
+
+    for (sortAttribute of Object.values(queryParams.sortAttributes)) {
+      const key = Object.keys(sortAttribute)[0];
+      sortAttributes[key] = sortAttribute[key] ? sortAttribute[key] : SortOrder.ASCENDING;
+    }
+  }
+
+  return sortAttributes;
 }
 
 async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
@@ -275,6 +296,9 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   return response;
 };
 
+/**
+ * @deprecated Use queryOrders instead
+ */
 export const getOrders: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
 
@@ -480,4 +504,39 @@ export const removeDiscount: ActionHook = async (request: Request, actionContext
   };
 
   return response;
+};
+
+export const queryOrders: ActionHook = async (request, actionContext) => {
+  const locale = getLocale(request);
+  const cartApi = new CartApi(actionContext.frontasticContext, locale, getCurrency(request));
+
+  const account = fetchAccountFromSession(request);
+  if (account === undefined) {
+    throw new AccountAuthenticationError({ message: 'Not logged in.' });
+  }
+
+  try {
+    const orderQuery: OrderQuery = {
+      accountId: account.accountId,
+      limit: request.query?.limit ?? undefined,
+      cursor: request.query?.cursor ?? undefined,
+      orderNumbers: queryParamsToIds('orderNumbers', request.query),
+      orderIds: queryParamsToIds('orderIds', request.query),
+      orderState: queryParamsToStates('orderStates', request.query),
+      sortAttributes: queryParamsToSortAttributes(request.query),
+      query: request.query?.query ?? undefined,
+    };
+
+    const queryResult = await cartApi.queryOrders(orderQuery);
+
+    const response: Response = {
+      statusCode: 200,
+      body: JSON.stringify(queryResult),
+      sessionData: request.sessionData,
+    };
+
+    return response;
+  } catch (error) {
+    return handleError(error, request);
+  }
 };

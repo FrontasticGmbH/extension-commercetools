@@ -26,7 +26,6 @@ import { CartMapper } from '../mappers/CartMapper';
 import { LineItem } from '@Types/cart/LineItem';
 import { Address } from '@Types/account/Address';
 import { Order } from '@Types/cart/Order';
-import { Guid } from '../utils/Guid';
 import { BaseApi } from './BaseApi';
 import { ShippingMethod } from '@Types/cart/ShippingMethod';
 import { Locale } from '../Locale';
@@ -40,6 +39,10 @@ import { CartPaymentNotFoundError } from '../errors/CartPaymentNotFoundError';
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { Context } from '@frontastic/extension-types';
 import { ProductApi } from './ProductApi';
+import { ProductMapper } from '@Commerce-commercetools/mappers/ProductMapper';
+import { getOffsetFromCursor } from '@Commerce-commercetools/utils/Pagination';
+import { PaginatedResult } from '@Types/result';
+import { OrderQuery } from '@Types/cart';
 
 export class CartApi extends BaseApi {
   productApi: ProductApi;
@@ -940,4 +943,70 @@ export class CartApi extends BaseApi {
 
     return commercetoolsCart.country !== locale.country || commercetoolsCart.locale !== locale.language;
   };
+
+  async queryOrders(orderQuery: OrderQuery): Promise<PaginatedResult<Order>> {
+    const locale = await this.getCommercetoolsLocal();
+    const limit = +orderQuery.limit || undefined;
+    const sortAttributes: string[] = [];
+
+    if (orderQuery.sortAttributes !== undefined) {
+      Object.keys(orderQuery.sortAttributes).map((field, directionIndex) => {
+        sortAttributes.push(`${field} ${Object.values(orderQuery.sortAttributes)[directionIndex]}`);
+      });
+    } else {
+      // default sort
+      sortAttributes.push(`lastModifiedAt desc`);
+    }
+
+    const whereClause = [`customerId="${orderQuery.accountId}"`];
+
+    if (orderQuery.orderIds !== undefined && orderQuery.orderIds.length !== 0) {
+      whereClause.push(`id in ("${orderQuery.orderIds.join('","')}")`);
+    }
+
+    if (orderQuery.orderNumbers !== undefined && orderQuery.orderNumbers.length !== 0) {
+      whereClause.push(`orderNumber in ("${orderQuery.orderNumbers.join('","')}")`);
+    }
+
+    if (orderQuery.orderState !== undefined && orderQuery.orderState.length > 0) {
+      whereClause.push(`orderState in ("${orderQuery.orderState.join('","')}")`);
+    }
+
+    if (orderQuery.businessUnitKey !== undefined) {
+      whereClause.push(`businessUnit(key="${orderQuery.businessUnitKey}")`);
+    }
+
+    const searchQuery = orderQuery.query && orderQuery.query;
+
+    return this.requestBuilder()
+      .orders()
+      .get({
+        queryArgs: {
+          where: whereClause,
+          expand: ['orderState'],
+          limit: limit,
+          offset: getOffsetFromCursor(orderQuery.cursor),
+          sort: sortAttributes,
+          [`text.${locale.language}`]: searchQuery,
+        },
+      })
+      .execute()
+      .then((response) => {
+        const orders = response.body.results.map((commercetoolsQuote) => {
+          return CartMapper.commercetoolsOrderToOrder(commercetoolsQuote, locale, this.defaultLocale);
+        });
+
+        return {
+          total: response.body.total,
+          items: orders,
+          count: response.body.count,
+          previousCursor: ProductMapper.calculatePreviousCursor(response.body.offset, response.body.count),
+          nextCursor: ProductMapper.calculateNextCursor(response.body.offset, response.body.count, response.body.total),
+          query: orderQuery,
+        };
+      })
+      .catch((error) => {
+        throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+      });
+  }
 }
