@@ -13,15 +13,12 @@ import { AccountAuthenticationError } from '../errors/AccountAuthenticationError
 import { CartRedeemDiscountCodeError } from '../errors/CartRedeemDiscountCodeError';
 import { ExternalError } from '@Commerce-commercetools/utils/Errors';
 import { Guid } from '@Commerce-commercetools/utils/Guid';
-import {
-  assertIsAuthenticated,
-  fetchAccountFromSession,
-} from '@Commerce-commercetools/actionControllers/AccountController';
 import queryParamsToStates from '@Commerce-commercetools/utils/queryParamsToState';
 import queryParamsToIds from '@Commerce-commercetools/utils/queryParamsToIds';
 import handleError from '@Commerce-commercetools/utils/handleError';
 import { SortAttributes, SortOrder } from '@Types/query/ProductQuery';
 import { OrderQuery } from '@Types/cart';
+import { fetchAccountFromSession } from '@Commerce-commercetools/utils/fetchAccountFromSession';
 
 type ActionHook = (request: Request, actionContext: ActionContext) => Promise<Response>;
 
@@ -299,6 +296,9 @@ export const checkout: ActionHook = async (request: Request, actionContext: Acti
   return response;
 };
 
+/**
+ * @deprecated Use queryOrders instead
+ */
 export const getOrders: ActionHook = async (request: Request, actionContext: ActionContext) => {
   const cartApi = getCartApi(request, actionContext);
 
@@ -509,7 +509,6 @@ export const removeDiscount: ActionHook = async (request: Request, actionContext
 export const queryOrders: ActionHook = async (request, actionContext) => {
   const locale = getLocale(request);
   const cartApi = new CartApi(actionContext.frontasticContext, locale, getCurrency(request));
-  assertIsAuthenticated(request);
 
   const account = fetchAccountFromSession(request);
   if (account === undefined) {
