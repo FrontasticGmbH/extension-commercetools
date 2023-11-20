@@ -44,7 +44,6 @@ function queryParamsToSortAttributes(queryParams: any) {
   return sortAttributes;
 }
 
-
 async function updateCartFromRequest(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
   let cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
 

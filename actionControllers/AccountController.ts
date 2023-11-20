@@ -93,7 +93,7 @@ async function loginAccount(request: Request, actionContext: ActionContext, acco
   return response;
 }
 
-export function assertIsAuthenticated(request: Request) {
+function assertIsAuthenticated(request: Request) {
   const account = fetchAccountFromSession(request);
 
   if (account === undefined) {
@@ -101,7 +101,7 @@ export function assertIsAuthenticated(request: Request) {
   }
 }
 
-export function fetchAccountFromSession(request: Request): Account | undefined {
+function fetchAccountFromSession(request: Request): Account | undefined {
   if (request.sessionData?.account !== undefined) {
     return request.sessionData.account;
   }
