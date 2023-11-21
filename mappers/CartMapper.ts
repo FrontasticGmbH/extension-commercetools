@@ -142,7 +142,7 @@ export class CartMapper {
     defaultLocale: string,
   ) => Order = (commercetoolsOrder: CommercetoolsOrder, locale: Locale, defaultLocale: string) => {
     return {
-      cartId: commercetoolsOrder.id,
+      cartId: commercetoolsOrder.cart?.id,
       orderState: commercetoolsOrder.orderState,
       orderId: commercetoolsOrder.id,
       orderNumber: commercetoolsOrder.orderNumber,
