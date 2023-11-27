@@ -74,11 +74,11 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
 
   try {
     const cart = await CartFetcher.fetchCartFromSession(cartApi, request, actionContext);
-    const cartId = cart.cartId;
+    const cartId = cart?.cartId;
 
     return {
       statusCode: 200,
-      body: JSON.stringify(cart),
+      body: cart ? JSON.stringify(cart) : undefined,
       sessionData: {
         ...request.sessionData,
         cartId,
