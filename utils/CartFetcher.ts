@@ -5,6 +5,18 @@ import { Guid } from './Guid';
 
 export class CartFetcher {
   static async fetchCart(cartApi: CartApi, request: Request, actionContext: ActionContext): Promise<Cart> {
+    return (
+      (await this.fetchCartFromSession(cartApi, request, actionContext)) ?? (await cartApi.getAnonymous(Guid.newGuid()))
+    );
+  }
+
+  static async fetchCartFromSession(
+    cartApi: CartApi,
+    request: Request,
+    actionContext: ActionContext,
+  ): Promise<Cart | undefined> {
+    // If the user just logged in and the anonymous cart was merged into the account cart, we want to return
+    // the account cart as it might be different from the anonymous cart id that was stored in the session.
     if (request.sessionData?.account !== undefined) {
       return await cartApi.getForUser(request.sessionData.account);
     }
@@ -13,10 +25,10 @@ export class CartFetcher {
       try {
         return await cartApi.getById(request.sessionData.cartId);
       } catch (error) {
-        console.info(`Error fetching the cart ${request.sessionData.cartId}, creating a new one. ${error}`);
+        console.info(`Error fetching the cart ${request.sessionData.cartId}. ${error}`);
       }
     }
 
-    return await cartApi.getAnonymous(Guid.newGuid());
+    return undefined;
   }
 }

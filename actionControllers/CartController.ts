@@ -73,7 +73,7 @@ export const getCart: ActionHook = async (request: Request, actionContext: Actio
   const cartApi = getCartApi(request, actionContext);
 
   try {
-    const cart = await CartFetcher.fetchCart(cartApi, request, actionContext);
+    const cart = await CartFetcher.fetchCartFromSession(cartApi, request, actionContext);
     const cartId = cart.cartId;
 
     return {
