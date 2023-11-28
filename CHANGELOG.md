@@ -1,4 +1,14 @@
 
+## Version 1.9.0 (2023-11-28)
+
+** New Features and Improvements **
+
+- Create cart only when an action will be performed
+
+** Bug fixes **
+
+- Set cart id on order mapper
+
 ## Version 1.8.0 (2023-11-16)
 
 ** New Features and Improvements **
