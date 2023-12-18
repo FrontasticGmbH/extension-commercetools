@@ -117,6 +117,11 @@ export class AccountApi extends BaseApi {
   ) => {
     const locale = await this.getCommercetoolsLocal();
 
+    const accountCredentials: Account = {
+      email: account.email,
+      password: account.password,
+    };
+
     account = await this.requestBuilder()
       .login()
       .post({
@@ -158,6 +163,11 @@ export class AccountApi extends BaseApi {
     if (!account.confirmed) {
       account.confirmationToken = await this.getConfirmationToken(account);
     }
+
+    // Create checkout token with the account credentials
+    await this.generateCheckoutToken(undefined, accountCredentials).catch((error) => {
+      throw new ExternalError({ status: error.code, message: error.message, body: error.body });
+    });
 
     return account;
   };
