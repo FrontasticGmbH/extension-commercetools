@@ -1,4 +1,11 @@
 
+## Version 1.12.0 (2024-04-22)
+
+** New Features and Improvements **
+
+- Upgraded checkout anywhere
+- Improved taxes and discounts
+
 ## Version 1.11.0 (2024-02-22)
 
 ** New Features and Improvements **

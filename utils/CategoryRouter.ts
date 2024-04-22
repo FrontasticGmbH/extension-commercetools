@@ -1,10 +1,10 @@
 import { Context, Request } from '@frontastic/extension-types';
-import { ProductApi } from '../apis/ProductApi';
 import { CategoryQuery } from '@Types/query/CategoryQuery';
 import { Category } from '@Types/product/Category';
+import { ProductPaginatedResult } from '@Types/result';
+import { ProductApi } from '../apis/ProductApi';
 import { getCurrency, getLocale, getPath } from './Request';
 import { ProductQueryFactory } from './ProductQueryFactory';
-import { ProductPaginatedResult } from '@Types/result';
 
 export class CategoryRouter {
   static identifyFrom(request: Request) {
@@ -16,7 +16,7 @@ export class CategoryRouter {
   }
 
   static loadFor = async (request: Request, frontasticContext: Context): Promise<ProductPaginatedResult> => {
-    const productApi = new ProductApi(frontasticContext, getLocale(request), getCurrency(request));
+    const productApi = new ProductApi(frontasticContext, getLocale(request), getCurrency(request), request);
 
     // We are using the last subdirectory of the path to identify the category slug
     const urlMatches = getPath(request)?.match(/[^/]+(?=\/$|$)/);
