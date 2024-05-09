@@ -52,9 +52,14 @@ import { ExternalError } from '@Commerce-commercetools/errors/ExternalError';
 export class CartApi extends BaseApi {
   productApi: ProductApi;
 
-  constructor(frontasticContext: Context, locale: string | null, currency: string | null, request?: Request | null) {
-    super(frontasticContext, locale, currency, request);
-    this.productApi = new ProductApi(frontasticContext, locale, currency, request);
+  constructor(
+    commercetoolsFrontendContext: Context,
+    locale: string | null,
+    currency: string | null,
+    request?: Request | null,
+  ) {
+    super(commercetoolsFrontendContext, locale, currency, request);
+    this.productApi = new ProductApi(commercetoolsFrontendContext, locale, currency, request);
   }
 
   async replicateCart(orderId: string): Promise<Cart> {
@@ -927,10 +932,8 @@ export class CartApi extends BaseApi {
     // }
 
     const propertyList = [
-      'customerId',
       'customerEmail',
       'customerGroup',
-      'anonymousId',
       'store',
       'inventoryMode',
       'taxMode',
@@ -945,6 +948,11 @@ export class CartApi extends BaseApi {
       'shippingRateInput',
       'itemShippingAddresses',
     ];
+
+    // Commercetools cart only accepts customerId or anonymousId
+    primaryCommercetoolsCart.customerId !== undefined
+      ? propertyList.push('customerId')
+      : propertyList.push('anonymousId');
 
     for (const key of propertyList) {
       if (primaryCommercetoolsCart.hasOwnProperty(key)) {

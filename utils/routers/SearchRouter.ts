@@ -1,8 +1,8 @@
 import { Context, Request } from '@frontastic/extension-types';
 import { ProductPaginatedResult } from '@Types/result';
-import { ProductApi } from '../apis/ProductApi';
-import { ProductQueryFactory } from './ProductQueryFactory';
-import { getCurrency, getLocale, getPath } from './Request';
+import { ProductApi } from '../../apis/ProductApi';
+import { ProductQueryFactory } from '../ProductQueryFactory';
+import { getCurrency, getLocale, getPath } from '../Request';
 
 export class SearchRouter {
   static identifyFrom(request: Request) {
@@ -15,8 +15,11 @@ export class SearchRouter {
     return false;
   }
 
-  static loadFor = async (request: Request, frontasticContext: Context): Promise<ProductPaginatedResult> | null => {
-    const productApi = new ProductApi(frontasticContext, getLocale(request), getCurrency(request), request);
+  static loadFor = async (
+    request: Request,
+    commercetoolsFrontendContext: Context,
+  ): Promise<ProductPaginatedResult> | null => {
+    const productApi = new ProductApi(commercetoolsFrontendContext, getLocale(request), getCurrency(request), request);
 
     const urlMatches = getPath(request)?.match(/\/search/);
 
