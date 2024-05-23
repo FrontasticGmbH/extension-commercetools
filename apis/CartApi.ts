@@ -33,7 +33,6 @@ import { Context, Request } from '@frontastic/extension-types';
 import { PaginatedResult } from '@Types/result';
 import { OrderQuery } from '@Types/query';
 import { Token } from '@Types/Token';
-import { CartSetAnonymousIdAction } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/cart';
 import { Locale } from '../Locale';
 import { isReadyForCheckout } from '../utils/Cart';
 import { CartNotCompleteError } from '../errors/CartNotCompleteError';
@@ -45,8 +44,6 @@ import { BaseApi } from './BaseApi';
 import { ProductMapper } from '@Commerce-commercetools/mappers/ProductMapper';
 import { getOffsetFromCursor } from '@Commerce-commercetools/utils/Pagination';
 import { CartNotActiveError } from '@Commerce-commercetools/errors/CartNotActiveError';
-import { tokenHasExpired } from '@Commerce-commercetools/utils/Token';
-import { TokenError } from '@Commerce-commercetools/errors/TokenError';
 import { ExternalError } from '@Commerce-commercetools/errors/ExternalError';
 
 export class CartApi extends BaseApi {
@@ -839,7 +836,8 @@ export class CartApi extends BaseApi {
   }
 
   async getCheckoutSessionToken(cartId: string): Promise<Token> {
-    return await this.generateCheckoutSessionToken(cartId);
+    const locale = await this.getCommercetoolsLocal();
+    return await this.generateCheckoutSessionToken(cartId, locale);
   }
 
   protected async updateCart(cartId: string, cartUpdate: CartUpdate, locale: Locale): Promise<CommercetoolsCart> {
