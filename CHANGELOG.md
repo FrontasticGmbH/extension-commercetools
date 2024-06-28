@@ -1,4 +1,8 @@
 
+## Version 1.16.0 (2024-06-28)
+
+** New Features and Improvements **
+
 ## Version 1.15.0 (2024-06-24)
 
 ** New Features and Improvements **
