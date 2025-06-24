@@ -1,4 +1,3 @@
-
 ## Version 3.8.0 (2025-06-24)
 
 ** New Features & Improvements **
@@ -17,7 +16,6 @@
 - port changes to b2c
 - removed usage of streamId and replace by the new dataSourceId field
 
-
 ** Bug Fixes **
 
 - fix lint errors
@@ -28,7 +26,6 @@
 - handle single value on product filter query
 
 ## Version 3.7.0 (2025-06-09)
-
 
 ** New Features & Improvements **
 
@@ -53,13 +50,11 @@
 
 ## Version 3.6.0 (2025-05-27)
 
-
 ** New Features & Improvements **
 
 - Migrate from commercetools/sdk-client-v2 to commercetools/ts-client
 
 ## Version 3.5.0 (2025-05-12)
-
 
 ** New Features & Improvements **
 
@@ -72,16 +67,14 @@
 - Use full identifier for filter attributes
 - Backported style changs from B2B
 
-
 ** Bug Fixes **
 
 - Validated discount target before map it
 
 ## Version 3.4.1 (2025-04-15)
 
-
 * Map more fields in lineitems
-* Aligned discount code to not  add the cart gift and handle invalid discount codes
+* Aligned discount code to not add the cart gift and handle invalid discount codes
 
 ## Version 3.4.0 (2025-04-07)
 
@@ -94,7 +87,6 @@
 * Implemented product filters and update product detail page structure
 * Added error handling for missing checkout config in B2B and B2C
 * Removed redundant getOrders method
-
 
 ** Bug Fixes **
 
@@ -120,13 +112,11 @@
 
 ## Version 3.2.0 (2025-03-03)
 
-
 ** Bug Fixes **
 
 * ensured that if no local or default local exist, first locale available is returned
 
 ## Version 3.1.0 (2025-02-17)
-
 
 ** New Features & Improvements **
 
@@ -158,7 +148,6 @@
 * Introduce product discounts inside b2c
 * Add direct discount and rename discount to DiscountCodes B2C
 
-
 ** Bug Fixes **
 
 * Not set customer group when cart is recreated
@@ -185,13 +174,11 @@
 
 ## Version 2.0.0 (2024-11-20)
 
-
 ** New Features & Improvements **
 
 * Modify attribute values to test CI lint
 * fix weak cryptographic algorithm
 * Updated core SDK to V2 alpha, added support
-
 
 ** Bug Fixes **
 
@@ -208,7 +195,7 @@
 
 ** Bug fixes **
 
-- Verify that matching variants exist before use the allMatched property 
+- Verify that matching variants exist before use the allMatched property
 - Return payment information on order details
 
 ## Version 1.20.0 (2024-10-02)
@@ -253,6 +240,7 @@
 ## Version 1.15.0 (2024-06-24)
 
 ** New Features and Improvements **
+
 - Handled discount code states different from MatchesCart
 - Support localized attribute
 - Set account email on cart creation for logged in user
@@ -269,11 +257,11 @@
 
 ** New Features and Improvements **
 
--  Allow for different locales and checkout application keys 
+- Allow for different locales and checkout application keys
 
 ** Bug fixes **
 
-- Verified if account exist on session to fetch the cart 
+- Verified if account exist on session to fetch the cart
 
 ## Version 1.13.0 (2024-05-16)
 
@@ -330,7 +318,7 @@
 
 ** New Features and Improvements **
 
-- Added CoCo, SMTP, and Adyen schema fields for project configuration schema 
+- Added CoCo, SMTP, and Adyen schema fields for project configuration schema
 
 ** Bug fixes **
 
@@ -364,6 +352,7 @@
 ## Version 1.4.0 (2023-03-08)
 
 ** New Features and Improvements **
+
 - Upgrade CoCo library
 - Get types from alias
 
