@@ -1,4 +1,4 @@
-# Commerce commercetools Extension
+# B2C Commerce commercetools Extension
 
 ## ⚠️ Important Notice: Repository Migration
 
