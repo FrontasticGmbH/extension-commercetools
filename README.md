@@ -14,7 +14,7 @@ This repository is **archived**. For the latest updates, improvements, and ongoi
 
 ## Migration Steps
 
-If you're currently using this commerce-commercetools extension:
+If you're currently using this B2C commerce-commercetools extension:
 
 1. **Bookmark** the new repository: https://github.com/FrontasticGmbH/scaffold-b2c
 2. **Watch** the new repository for updates and releases
